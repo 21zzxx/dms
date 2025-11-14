@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Withdraw Submitted - D MALL</title>
+  <style>
+    body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0; background:#f7f8fa}
+    .container{max-width:720px;margin:110px auto 40px;padding:20px}
+    .card{background:#fff;padding:20px;border-radius:8px;margin-bottom:12px;text-align:center}
+    .info{font-size:16px;margin:8px 0}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="ok">Withdraw request submitted</div>
+      <div class="info" id="infoAmount">Amount: --</div>
+      <div class="info" id="infoDest">Destination: --</div>
+      <div class="info" id="infoTime">Time: --</div>
+      <div style="margin-top:12px"><a href="index.html">Return to home</a></div>
+    </div>
+  </div>
+
+  <script>
+    (async ()=>{
+      const lastId = localStorage.getItem('dmall_last_withdraw');
+      const token = localStorage.getItem('dmall_token');
+      if(token){
+        try{
+          const res = await fetch('/api/withdraws', { headers: { 'Authorization': 'Bearer ' + token } });
+          if(res.ok){
+            const data = await res.json();
+            let rec = null;
+            if(lastId && lastId.startsWith('w_')){
+              const rid = Number(lastId.slice(2));
+              rec = data.withdraws && data.withdraws.find(w => w.id === rid);
+            }
+            if(!rec && data.withdraws && data.withdraws.length) rec = data.withdraws[0];
+            if(rec){
+              document.getElementById('infoAmount').textContent = 'Amount: ' + rec.amount;
+              document.getElementById('infoDest').textContent = 'Destination: ' + (rec.dest || rec.destination || '--');
+              document.getElementById('infoTime').textContent = 'Submitted: ' + new Date(rec.created_at || rec.created).toLocaleString();
+              return;
+            }
+          }
+        }catch(e){/*fallback*/}
+      }
+
+      const db = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
+      const rec = db.find(r=>r.id === lastId) || null;
+      if(rec){
+        document.getElementById('infoAmount').textContent = 'Amount: ' + rec.amount;
+        document.getElementById('infoDest').textContent = 'Destination: ' + rec.dest;
+        document.getElementById('infoTime').textContent = 'Submitted: ' + (rec.created || new Date().toISOString());
+      }
+    })();
+  </script>
+</body>
+</html>

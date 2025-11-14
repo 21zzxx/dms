@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quick Login - D MALL</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:28px}
+    .box{max-width:480px;margin:40px auto;padding:18px;border:1px solid #eee;border-radius:8px}
+    button{display:block;width:100%;padding:12px;margin-top:10px;border-radius:8px;border:0;background:#0b5fff;color:#fff;cursor:pointer}
+    .secondary{background:#fff;color:#0b5fff;border:1px solid #0b5fff}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Quick Login (dev only)</h2>
+    <p>Use these buttons to populate localStorage with a test session so you can open <code>index.html</code> immediately.</p>
+    <button id="btnAlice">Login as alice (user)</button>
+    <button id="btnAdmin" class="secondary">Login as admin (admin)</button>
+    <button id="btnClear" style="background:#ef4444">Clear session (logout)</button>
+    <p style="margin-top:12px;font-size:13px;color:#555">This only sets localStorage in your browser. For real auth, sign in via <code>/login.html</code> or run the server seeds.</p>
+  </div>
+
+  <script>
+    document.getElementById('btnAlice').addEventListener('click', ()=>{
+      // fake token and user object for quick dev access
+      localStorage.setItem('dmall_token', 'dev-token-alice');
+      localStorage.setItem('dmall_user', JSON.stringify({ id: 2, username: 'alice', email: 'alice@example.com', role: 'user' }));
+      // go to index (file-based)
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('btnAdmin').addEventListener('click', ()=>{
+      localStorage.setItem('dmall_token', 'dev-token-admin');
+      localStorage.setItem('dmall_user', JSON.stringify({ id: 1, username: 'admin', email: 'admin@example.com', role: 'admin' }));
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('btnClear').addEventListener('click', ()=>{
+      localStorage.removeItem('dmall_token');
+      localStorage.removeItem('dmall_user');
+      alert('Session cleared.');
+    });
+  </script>
+</body>
+</html>

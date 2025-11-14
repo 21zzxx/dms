@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Recharge Confirmation - D MALL</title>
+  <style>
+    body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0; background:#f7f8fa}
+    .container{max-width:720px;margin:110px auto 40px;padding:20px}
+    .card{background:#fff;padding:20px;border-radius:8px;margin-bottom:12px;text-align:center}
+    .amount{font-size:28px;font-weight:600;margin-bottom:10px}
+    .wallet{font-size:14px;color:#0b5fff;word-break:break-all}
+    .qr{width:160px;height:160px;margin:12px auto;background:#fff;display:block}
+    .note{font-size:13px;color:#374151;margin-top:12px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="amount" id="displayAmount">-- USDT</div>
+      <canvas id="qrCanvas" class="qr" aria-hidden="true"></canvas>
+      <div class="wallet" id="walletAddr">TRON_WALLET_ADDRESS_PLACEHOLDER</div>
+      <div class="note">Upload a screenshot of your payment confirmation below and click <strong>Confirm Payment</strong></div>
+      <div style="margin-top:12px">
+        <input id="screenshotInput" type="file" accept="image/*">
+        <div style="margin-top:8px"><img id="screenshotPreview" src="" alt="preview" style="max-width:220px;display:none;border-radius:6px;border:1px solid #e5e7eb"></div>
+        <div style="margin-top:12px"><button id="btnConfirm" class="btn">Confirm Payment</button></div>
+        <div id="confirmMsg" style="margin-top:8px;color:green;display:none">Payment confirmed locally. Thank you.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // read last saved recharge id
+  const lastId = localStorage.getItem('dmall_last_recharge');
+  let rec = null;
+  const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
+  rec = db.find(r=>r.id === lastId) || null;
+    const amountEl = document.getElementById('displayAmount');
+    const walletEl = document.getElementById('walletAddr');
+    const canvas = document.getElementById('qrCanvas');
+
+    if(!rec){ amountEl.textContent = 'No recharge found'; }
+    else{
+      amountEl.textContent = rec.amount + ' USDT';
+      // wallet address (placeholder) - in real app this comes from server
+      const wallet = 'TXYZ12345EXAMPLEADDRESSFORTRON';
+      walletEl.textContent = wallet;
+      // generate simple QR code (very small, not robust) - we'll draw the wallet text onto canvas as placeholder
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#111827'; ctx.font = '12px monospace';
+      wrapText(ctx, wallet, 8, 24, 144, 14);
+    }
+
+    // screenshot handling
+    const input = document.getElementById('screenshotInput');
+    const preview = document.getElementById('screenshotPreview');
+    const btnConfirm = document.getElementById('btnConfirm');
+    const msg = document.getElementById('confirmMsg');
+
+    input.addEventListener('change', e=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        preview.src = ev.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(f);
+    });
+
+    btnConfirm.addEventListener('click', async ()=>{
+      const src = preview.src;
+      if(!src){ alert('Please upload a screenshot before confirming.'); return; }
+      // if remote id exists and user is logged in, POST update to server
+      const token = localStorage.getItem('dmall_token');
+      if (token && lastId && lastId.startsWith('r_')){
+        // send screenshot to server by creating a new recharge if remote id absent
+        try{
+          // If remote id numeric part
+          const remoteId = lastId.startsWith('r_') ? lastId.slice(2) : null;
+          // We will PATCH by inserting screenshot into the recharges table via admin or a custom endpoint. Simpler: create a new confirm endpoint isn't implemented; instead, attach screenshot by creating a small client-side update: call /api/recharges to create a record with screenshot
+          const payload = { method: rec.currency || rec.method || 'USDT', network: rec.network, amount: rec.amount, name: rec.username || rec.name, screenshot: src };
+          const res = await fetch('/api/recharges', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(payload) });
+          if (res.ok){
+            msg.style.display = 'block';
+            setTimeout(()=>{ window.location.href = 'recharge-success.html'; }, 1200);
+            return;
+          }
+        }catch(e){ console.warn('Remote confirm failed, falling back to local'); }
+      }
+
+      // fallback: store into the recharge record locally
+      const localDb = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
+      const idx = localDb.findIndex(r=>r.id === lastId);
+      if(idx === -1){ alert('Recharge record not found.'); return; }
+      localDb[idx].screenshot = src;
+      localDb[idx].confirmed = true;
+      localDb[idx].confirmedAt = new Date().toISOString();
+      localStorage.setItem('dmall_recharges', JSON.stringify(localDb));
+      msg.style.display = 'block';
+      // redirect to success page after brief delay
+      setTimeout(()=>{ window.location.href = 'recharge-success.html'; }, 1500);
+    });
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+      const words = text.split(' ');
+      let line = '';
+      for(let n=0;n<words.length;n++){
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if(testWidth > maxWidth && n > 0){
+          ctx.fillText(line, x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, y);
+    }
+  </script>
+</body>
+</html>

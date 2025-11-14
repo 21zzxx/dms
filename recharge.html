@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Recharge - D MALL</title>
+  <style>
+    body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0; background:#f7f8fa}
+    .container{max-width:720px;margin:110px auto 40px;padding:20px}
+    .card{background:#fff;padding:16px;border-radius:8px;margin-bottom:12px}
+    .card h4{margin:0 0 8px}
+    .options{display:flex;gap:12px}
+    .option{flex:1;padding:12px;border:1px solid #e5e7eb;border-radius:6px;text-align:center;cursor:pointer}
+    .option.selected{border-color:#0b5fff;background:#f0f6ff}
+    label{display:block;margin:12px 0 6px}
+    input[type=number], input[type=text]{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px}
+    .actions{text-align:right;margin-top:12px}
+    .btn{background:#0b5fff;color:#fff;padding:10px 14px;border-radius:6px;border:none;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Recharge</h2>
+
+    <div class="card">
+      <h4>Currency</h4>
+      <div class="options" id="optCurrency">
+        <div class="option selected" data-value="USDT">USDT</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Network</h4>
+      <div class="options" id="optNetwork">
+        <div class="option selected" data-value="TRON-20">TRON-20</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Payments</h4>
+      <div class="options" id="optPayments">
+        <div class="option selected" data-value="ALL PAYMENTS">ALL PAYMENTS</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="amount">Amount to recharge</label>
+      <input id="amount" type="number" min="1" placeholder="Enter amount">
+      <label for="username">Your name (optional)</label>
+      <input id="username" type="text" placeholder="Enter your name or id">
+      <div class="actions">
+        <button id="btnAccept" class="btn">Accept</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // small UI handlers
+    function setSelection(containerId){
+      const cont = document.getElementById(containerId);
+      cont.addEventListener('click', e =>{
+        const opt = e.target.closest('.option');
+        if(!opt) return;
+        Array.from(cont.querySelectorAll('.option')).forEach(o=>o.classList.remove('selected'));
+        opt.classList.add('selected');
+      });
+    }
+    setSelection('optCurrency'); setSelection('optNetwork'); setSelection('optPayments');
+
+    // save: if logged in, POST to API, otherwise store locally in localStorage
+    async function saveRechargeRemote(form){
+      const token = localStorage.getItem('dmall_token');
+      if (!token) return null;
+      try{
+        const res = await fetch('/api/recharges', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(form) });
+        if(!res.ok) return null;
+        const data = await res.json();
+        return 'r_' + data.id; // return remote id prefixed
+      }catch(e){ return null; }
+    }
+
+    function saveRechargeLocal(form){
+      const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
+      db.push(form);
+      localStorage.setItem('dmall_recharges', JSON.stringify(db));
+      return form.id;
+    }
+
+    document.getElementById('btnAccept').addEventListener('click', async ()=>{
+      const amount = Number(document.getElementById('amount').value || 0);
+      if(!amount || amount <= 0){ alert('Please enter a valid amount'); return; }
+      const username = document.getElementById('username').value || '';
+      const currency = document.querySelector('#optCurrency .option.selected').dataset.value;
+      const network = document.querySelector('#optNetwork .option.selected').dataset.value;
+      const payments = document.querySelector('#optPayments .option.selected').dataset.value;
+
+      const idLocal = 'r_' + Date.now();
+      const form = { id: idLocal, username, amount, currency, network, payments, created: new Date().toISOString() };
+
+      // try remote first
+      const remoteId = await saveRechargeRemote({ method: currency, network, amount, name: username });
+      if (remoteId){
+        localStorage.setItem('dmall_last_recharge', remoteId);
+        // also keep a local copy for quick UI
+        saveRechargeLocal(Object.assign({}, form, { remoteId }));
+      } else {
+        saveRechargeLocal(form);
+        localStorage.setItem('dmall_last_recharge', idLocal);
+      }
+
+      // redirect to confirmation page
+      window.location.href = 'recharge-confirm.html';
+    });
+  </script>
+</body>
+</html>

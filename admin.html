@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin - D MALL</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:18px}
+    h1{margin-bottom:6px}
+    .row{display:flex;gap:12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+    .controls{display:flex;gap:8px}
+    .small{font-size:13px;padding:6px}
+  </style>
+</head>
+<body>
+  <h1>Admin</h1>
+  <p>Only visible to admin users. If you don't have an admin account, create one in the DB or set your role to 'admin'.</p>
+  <div>
+    <h3>Users</h3>
+  <table id="usersTable"><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Balance</th><th>Actions</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div style="margin-top:18px">
+    <h3>Recent Recharges</h3>
+    <table id="rechargesTable"><thead><tr><th>ID</th><th>User ID</th><th>Amount</th><th>Confirmed</th><th>Created</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div id="msg" style="color:red;margin-top:8px"></div>
+
+  <script>
+    const token = localStorage.getItem('dmall_token');
+    const apiBase = '/api';
+    const headers = token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+    async function loadUsers(){
+      const res = await fetch(apiBase + '/admin/users', { headers });
+      if (!res.ok) return document.getElementById('msg').textContent = 'Unauthorized or admin only';
+      const data = await res.json();
+      const tbody = document.querySelector('#usersTable tbody'); tbody.innerHTML='';
+      data.users.forEach(u => {
+        const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${u.id}</td><td>${u.username}</td><td>${u.email}</td><td>${u.role}</td><td>${(u.balance||0).toFixed(2)}</td><td><div class="controls"><button onclick="setRole(${u.id},'admin')" class="small">Make Admin</button><button onclick="setRole(${u.id},'user')" class="small">Make User</button><input id=\"top_${u.id}\" type=\"number\" placeholder=\"amt\" style=\"width:80px;padding:6px;border:1px solid #ddd;border-radius:6px;margin-left:8px\"><button onclick=\"topUp(${u.id})\" class=\"small\" style=\"background:#10b981;color:#fff\">Topup</button></div></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    async function loadRecharges(){
+      const res = await fetch(apiBase + '/admin/recharges', { headers });
+      if (!res.ok) return;
+      const data = await res.json();
+      const tbody = document.querySelector('#rechargesTable tbody'); tbody.innerHTML='';
+      data.recharges.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.id}</td><td>${r.user_id}</td><td>${r.amount}</td><td>${r.confirmed}</td><td>${new Date(r.created_at).toLocaleString()}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    async function setRole(id, role){
+      await fetch(apiBase + '/admin/user/' + id + '/update', { method: 'POST', headers, body: JSON.stringify({ role }) });
+      await loadUsers();
+    }
+    async function topUp(userId){
+      const val = Number(document.getElementById('top_' + userId).value || 0);
+      if(!val || val <= 0) return alert('Enter a valid amount');
+      const res = await fetch(apiBase + '/admin/topup', { method: 'POST', headers, body: JSON.stringify({ userId, amount: val, note: 'manual topup' }) });
+      const data = await res.json();
+      if(!res.ok) return alert(data.error || 'Topup failed');
+      alert('Topup successful');
+      await loadUsers();
+    }
+    loadUsers(); loadRecharges();
+  </script>
+</body>
+</html>

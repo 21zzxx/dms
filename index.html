@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>app</title>
+    <style>
+        /* Plain white navbar with left logo placeholder */
+        :root {
+            --navbar-height: 64px;
+            --page-bg: #f7f8fa; /* subtle off-white / very light gray to contrast the navbar */
+        }
+        html, body { margin: 0; height: 100%; background: var(--page-bg); }
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--navbar-height);
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            box-shadow: none;
+            z-index: 1000;
+        }
+        /* Logo image; user will add src later (img has id="logo") */
+        .navbar .logo {
+            height: 40px;
+            width: auto;
+            display: block;
+        }
+
+        /* Action bar directly below the navbar, same height and color */
+        .action-bar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            right: 0;
+            height: var(--navbar-height);
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: #ffffff; /* match navbar */
+            box-sizing: border-box;
+            padding: 0 16px;
+            border-bottom: 1px solid #f0f0f0;
+            z-index: 999; /* below navbar (1000) but above page content */
+        }
+        .action-bar-inner {
+            display: flex;
+            gap: 0;
+            align-items: center;
+            width: 100%;
+        }
+        /* Icon button with label below */
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1 1 0;
+            height: 100%;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            color: #111827;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+        }
+        .action-item:focus { outline: 2px solid rgba(0,0,0,0.08); outline-offset: 2px; }
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            display: block;
+            margin-bottom: 6px;
+            color: inherit;
+        }
+        .action-label {
+            font-size: 12px;
+            line-height: 1;
+            color: #374151;
+        }
+        .action-item:hover {
+            background: rgba(0,0,0,0.03);
+            color: #0b5fff;
+        }
+        .action-item:active { transform: translateY(1px); }
+        /* Transaction ticker styles */
+        .tx-ticker {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: calc(var(--navbar-height) * 2 + 10px); /* moved down 10px */
+            height: 40px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background: #f3f4f6; /* slightly grey */
+            padding: 0 17px; /* 5px wider than before */
+            z-index: 900;
+        }
+        .tx-ticker-track {
+            display: flex;
+            flex-direction: column;
+            gap: 0; /* remove vertical gap so items align exactly with container height */
+            align-items: stretch;
+            height: 100%;
+        }
+        .tx-item {
+            display: flex;
+            align-items: center;
+            height: 100%; /* match the ticker container height */
+            font-size: 13px;
+            color: #111827;
+            background: rgba(255,255,255,0.0);
+            padding: 0 8px; /* horizontal padding only */
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* prevent long text wrapping */
+        }
+
+        @keyframes scroll-down {
+            0% { transform: translateY(-50%); }
+            100% { transform: translateY(0); }
+        }
+
+        /* Prevent page content from sitting under the fixed navbar */
+        main, .content { padding-top: calc(var(--navbar-height) * 2); }
+    /* D MALL feature cards */
+    .dmall-features { padding: 28px 20px; max-width: 1100px; margin: 0 auto; }
+    .section-title { margin: 0 0 12px 0; font-size: 18px; color: #0f172a; }
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .card { background: #ffffff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .card h3 { margin: 0 0 8px 0; font-size: 16px; }
+    .card p { margin: 0; color: #334155; font-size: 14px; line-height: 1.4; }
+    @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px) { .cards { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <a href="index.html" class="navbar-brand" aria-label="Home">
+            <!-- Replace the img below with your logo later, e.g. <img id="logo" src="/assets/logo.png" alt="Logo"> -->
+            <img id="logo" class="logo" alt="Logo">
+        </a>
+        <div id="navUser" style="margin-left:auto;display:flex;align-items:center;gap:12px;font-family:system-ui;font-size:14px;color:#0b5fff">
+          <!-- Populated by JS: shows login link or username + logout -->
+          <a id="navLoginLink" href="login.html" style="color:inherit;text-decoration:none;display:none">Log in</a>
+          <a id="navSignupLink" href="signup.html" style="color:inherit;text-decoration:none;display:none">Sign up</a>
+          <div id="navUserInfo" style="display:none;align-items:center;gap:8px">
+            <span id="navUsername" style="color:#0b5fff;font-weight:600"></span>
+            <button id="btnLogout" style="background:#fff;border:1px solid #e5e7eb;padding:6px 8px;border-radius:6px;cursor:pointer">Logout</button>
+          </div>
+        </div>
+    </nav>
+    <!-- Action bar: same height as the navbar, sits below it -->
+    <div class="action-bar" role="region" aria-label="Quick actions">
+        <div class="action-bar-inner">
+            <button id="btnRecharge" class="action-item" aria-label="Recharge">
+                <!-- Recharge (bolt) icon - stroke-based -->
+                <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 21h-1l1-7H7l6-11v7h4l-6 11z" />
+                </svg>
+                <span class="action-label">Recharge</span>
+            </button>
+
+            <button id="btnWithdraw" class="action-item" aria-label="Withdraw">
+                <!-- Withdraw (download) icon - stroke-based for visibility -->
+                <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4" />
+                    <path d="M7 10l5 5 5-5" />
+                    <path d="M12 15V3" />
+                </svg>
+                <span class="action-label">Withdraw</span>
+            </button>
+
+            <button class="action-item" aria-label="Teams">
+                <!-- Teams (users) icon - stroke-based -->
+                <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" stroke="currentColor" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                    <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                    <path d="M2 20v-1a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v1" />
+                </svg>
+                <span class="action-label">Teams</span>
+            </button>
+
+            <button class="action-item" aria-label="Invite">
+                <!-- Invite (share) icon - stroke-based -->
+                <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+                    <path d="M16 6l-4-4-4 4" />
+                    <path d="M12 2v13" />
+                </svg>
+                <span class="action-label">Invite</span>
+            </button>
+        </div>
+    </div>
+    <main class="content">
+        <!-- Page content goes here -->
+        <section class="dmall-features" aria-label="About D MALL">
+            <h2 class="section-title">What is D MALL?</h2>
+            <div class="cards">
+                <article class="card">
+                    <h3>Global Cloud Matching</h3>
+                    <p>D MALL runs a resilient cloud-native order-matching engine that connects buyers and sellers across regions. Orders are matched in real-time using optimized algorithms so liquidity flows smoothly and latency is minimized.</p>
+                </article>
+
+                <article class="card">
+                    <h3>Scalable & Fault-Tolerant</h3>
+                    <p>The platform is built for scale. Auto-scaling components and redundant services ensure D MALL remains available under heavy load and continues matching orders even when parts of the system fail.</p>
+                </article>
+
+                <article class="card">
+                    <h3>Global Liquidity Pools</h3>
+                    <p>D MALL aggregates liquidity from multiple markets and providers, enabling better price discovery and tighter spreads. Global order-routing intelligently directs orders to the best venues in milliseconds.</p>
+                </article>
+
+                <article class="card">
+                    <h3>Secure & Compliant</h3>
+                    <p>Security is central to D MALL: encrypted communication, auditable transaction logs, and role-based access control keep data and funds safe while complying with regional regulations.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+    <!-- Transaction ticker: one-item vertical slideshow -->
+    <div class="tx-ticker" id="txTicker" aria-label="Recent withdrawals">
+        <div class="tx-slot tx-current" aria-hidden="false"></div>
+        <div class="tx-slot tx-next" aria-hidden="true"></div>
+    </div>
+
+    <script>
+    (function(){
+        const ticker = document.getElementById('txTicker');
+        const current = ticker.querySelector('.tx-current');
+        const next = ticker.querySelector('.tx-next');
+        // generate masked numeric ids instead of usernames
+        function makeNumericId(){
+            // 8-digit id
+            return String(Math.floor(10000000 + Math.random() * 90000000));
+        }
+        function maskId(id){
+            if(!id || id.length < 4) return id;
+            return id.slice(0,2) + '***' + id.slice(-2);
+        }
+        function randAmount(){
+            return Math.floor(Math.random() * (1000 - 100 + 1)) + 100;
+        }
+        function makeText(){
+            const id = makeNumericId();
+            const amt = randAmount();
+            return `${maskId(id)} withdrew ${amt} USDT`;
+        }
+
+        // Ensure CSS for slots is present
+        // initialize content
+        current.textContent = makeText();
+        // set sizes so slots align with ticker
+        function setSlotHeights(){
+            const height = ticker.clientHeight;
+            [current,next].forEach(s => s.style.height = height + 'px');
+        }
+
+        let interval = null;
+        const delay = 3000; // 3s
+        let animating = false;
+
+        function start(){
+            stop();
+            setSlotHeights();
+            // prepare next off-screen
+            next.style.transition = 'none';
+            next.style.transform = 'translateY(-100%)';
+            next.setAttribute('aria-hidden','true');
+            // small tick before starting
+            interval = setInterval(step, delay);
+        }
+        function stop(){ if(interval){ clearInterval(interval); interval = null; }}
+
+        function step(){
+            if(animating) return;
+            animating = true;
+            // populate next
+            next.textContent = makeText();
+            next.setAttribute('aria-hidden','false');
+            current.setAttribute('aria-hidden','true');
+
+            // set start positions
+            next.style.transition = 'none';
+            next.style.transform = 'translateY(-100%)';
+            // force reflow
+            void next.offsetWidth;
+
+            // animate both
+            next.style.transition = 'transform 400ms ease';
+            current.style.transition = 'transform 400ms ease';
+            next.style.transform = 'translateY(0)';
+            current.style.transform = 'translateY(100%)';
+
+            // when next finishes moving in, swap roles
+            next.addEventListener('transitionend', onTransitionEnd, {once:true});
+        }
+
+        function onTransitionEnd(){
+            // move current content into 'current' slot and reset 'next'
+            current.textContent = next.textContent;
+            current.style.transition = 'none';
+            current.style.transform = 'translateY(0)';
+            current.setAttribute('aria-hidden','false');
+
+            next.style.transition = 'none';
+            next.style.transform = 'translateY(-100%)';
+            next.setAttribute('aria-hidden','true');
+
+            // force reflow to clear inline styles
+            void current.offsetWidth;
+            animating = false;
+        }
+
+        // pause on hover
+        ticker.addEventListener('mouseenter', stop);
+        ticker.addEventListener('mouseleave', start);
+
+        // handle resize
+        window.addEventListener('resize', () => {
+            setSlotHeights();
+        });
+
+        // start
+        start();
+    })();
+    </script>
+    <script>
+    // Authentication UI and gating
+    (function(){
+        const token = localStorage.getItem('dmall_token');
+        const navLogin = document.getElementById('navLoginLink');
+        const navSignup = document.getElementById('navSignupLink');
+        const navUserInfo = document.getElementById('navUserInfo');
+        const navUsername = document.getElementById('navUsername');
+        const btnLogout = document.getElementById('btnLogout');
+        const btnRecharge = document.getElementById('btnRecharge');
+
+        function showLoggedOut(){
+            navLogin.style.display = 'inline';
+            navSignup.style.display = 'inline';
+            navUserInfo.style.display = 'none';
+        }
+        function showLoggedIn(user){
+            navLogin.style.display = 'none';
+            navSignup.style.display = 'none';
+            navUserInfo.style.display = 'flex';
+            navUsername.textContent = user && user.username ? user.username : 'User';
+        }
+
+        // If no token, always open login.html (per your request: site should open at the login page at all times)
+        if(!token){
+            // If we're not already on login.html, redirect there. Use filename-based URLs.
+            if(!window.location.pathname.endsWith('login.html')){
+                window.location.href = 'login.html';
+                return;
+            }
+            showLoggedOut();
+        } else {
+            // show user info in navbar
+            const user = JSON.parse(localStorage.getItem('dmall_user') || 'null');
+            showLoggedIn(user);
+        }
+
+        // Recharge button: if not logged in, redirect to login page; else open recharge form
+        if(btnRecharge){
+            btnRecharge.addEventListener('click', (e) => {
+                const t = localStorage.getItem('dmall_token');
+                if(!t){ window.location.href = 'login.html'; return; }
+                window.location.href = 'recharge.html';
+            });
+        }
+
+        const btnWithdraw = document.getElementById('btnWithdraw');
+        if(btnWithdraw){
+            btnWithdraw.addEventListener('click', (e) => {
+                const t = localStorage.getItem('dmall_token');
+                if(!t){ window.location.href = 'login.html'; return; }
+                window.location.href = 'withdraw.html';
+            });
+        }
+
+        // Logout: clear token and redirect to login.html
+        btnLogout && btnLogout.addEventListener('click', ()=>{
+            localStorage.removeItem('dmall_token');
+            localStorage.removeItem('dmall_user');
+            // keep file-based url
+            window.location.href = 'login.html';
+        });
+    })();
+    </script>
+</body>
+</html>

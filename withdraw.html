@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Withdraw - D MALL</title>
+  <style>
+    body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0; background:#f7f8fa}
+    .container{max-width:720px;margin:110px auto 40px;padding:20px}
+    .card{background:#fff;padding:16px;border-radius:8px;margin-bottom:12px}
+    label{display:block;margin:8px 0 6px}
+    input, select{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px}
+    .actions{text-align:right;margin-top:12px}
+    .btn{background:#0b5fff;color:#fff;padding:10px 14px;border-radius:6px;border:none;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Withdraw</h2>
+
+    <div class="card">
+      <label for="method">Method</label>
+      <!-- Only USDT allowed -->
+      <select id="method">
+        <option selected>USDT</option>
+      </select>
+
+      <label for="amount">Amount</label>
+      <input id="amount" type="number" min="1" placeholder="Enter amount" />
+
+      <label for="dest">Destination address / account</label>
+      <input id="dest" type="text" placeholder="Wallet address or account" />
+
+      <label for="note">Note (optional)</label>
+      <input id="note" type="text" placeholder="Additional note" />
+
+      <div class="actions">
+        <button id="btnWithdraw" class="btn">Withdraw</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function saveWithdrawRemote(payload){
+      const token = localStorage.getItem('dmall_token');
+      if(!token) return null;
+      try{
+        const res = await fetch('/api/withdraws', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(payload) });
+        if(!res.ok) return null;
+        const data = await res.json();
+        return 'w_' + data.id;
+      }catch(e){ return null; }
+    }
+
+    function saveWithdrawLocal(rec){
+      const db = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
+      db.push(rec);
+      localStorage.setItem('dmall_withdraws', JSON.stringify(db));
+      return rec.id;
+    }
+
+    document.getElementById('btnWithdraw').addEventListener('click', async ()=>{
+      const method = document.getElementById('method').value;
+      const amount = Number(document.getElementById('amount').value || 0);
+      const dest = document.getElementById('dest').value.trim();
+      const note = document.getElementById('note').value.trim();
+      if(!amount || amount <= 0) return alert('Enter a valid amount');
+      if(!dest) return alert('Please provide a destination address');
+
+      const idLocal = 'w_' + Date.now();
+      const rec = { id: idLocal, method, amount, dest, note, created: new Date().toISOString(), status: 'pending' };
+
+      const remote = await saveWithdrawRemote({ method, amount, dest, note });
+      if(remote){
+        localStorage.setItem('dmall_last_withdraw', remote);
+        // keep local copy too
+        saveWithdrawLocal(Object.assign({}, rec, { remoteId: remote }));
+      } else {
+        // if server responded with an error, saveWithdrawRemote returned null; try to detect server response
+        // We already fallback to local save, but ensure user sees a helpful message if the server rejected due to balance
+        // Attempt a direct fetch to capture the error message if token present
+        const token = localStorage.getItem('dmall_token');
+        if(token){
+          try{
+            const resp = await fetch('/api/withdraws', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ method, amount, dest, note }) });
+            const data = await resp.json();
+            if(!resp.ok){
+              alert(data.error || 'Withdraw failed');
+              return;
+            }
+            const remoteId = 'w_' + data.id;
+            localStorage.setItem('dmall_last_withdraw', remoteId);
+            saveWithdrawLocal(Object.assign({}, rec, { remoteId }));
+            window.location.href = 'withdraw-success.html';
+            return;
+          }catch(e){
+            // network or server error; fallback to local save
+          }
+        }
+
+        saveWithdrawLocal(rec);
+        localStorage.setItem('dmall_last_withdraw', idLocal);
+      }
+
+      window.location.href = 'withdraw-success.html';
+    });
+  </script>
+</body>
+</html>

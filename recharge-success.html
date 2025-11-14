@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Recharge Success - D MALL</title>
+  <style>
+    body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0; background:#f7f8fa}
+    .container{max-width:720px;margin:110px auto 40px;padding:20px}
+    .card{background:#fff;padding:20px;border-radius:8px;margin-bottom:12px;text-align:center}
+    .ok{font-size:20px;color:green;margin-bottom:8px}
+    .info{font-size:16px;margin:8px 0}
+    .thumb{max-width:240px;border-radius:6px;border:1px solid #e5e7eb;margin:8px auto;display:block}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="ok">Payment submitted — awaiting verification</div>
+      <div class="info" id="infoAmount">Amount: --</div>
+      <div class="info" id="infoTime">Time: --</div>
+      <img id="imgThumb" class="thumb" src="" alt="uploaded screenshot" style="display:none">
+      <div style="margin-top:12px"><a href="index.html">Return to home</a></div>
+    </div>
+  </div>
+  <script>
+    (async ()=>{
+      const lastId = localStorage.getItem('dmall_last_recharge');
+      const token = localStorage.getItem('dmall_token');
+      // try remote fetch of user's recharges
+      if (token){
+        try{
+          const res = await fetch('/api/recharges', { headers: { 'Authorization': 'Bearer ' + token } });
+          if (res.ok){
+            const data = await res.json();
+            // try find by remote id suffix if lastId starts with r_
+            let rec = null;
+            if (lastId && lastId.startsWith('r_')){
+              const rid = Number(lastId.slice(2));
+              rec = data.recharges.find(r => r.id === rid);
+            }
+            // fallback: use first recharge
+            if (!rec && data.recharges.length) rec = data.recharges[0];
+            if (rec){
+              document.getElementById('infoAmount').textContent = 'Amount: ' + rec.amount + ' USDT';
+              document.getElementById('infoTime').textContent = 'Submitted: ' + new Date(rec.created_at).toLocaleString();
+              if(rec.screenshot){ const img = document.getElementById('imgThumb'); img.src = rec.screenshot; img.style.display = 'block'; }
+              return;
+            }
+          }
+        }catch(e){ /* ignore and fallback */ }
+      }
+
+      // fallback to localStorage
+      const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
+      const rec = db.find(r=>r.id === lastId) || null;
+      if(rec){
+        document.getElementById('infoAmount').textContent = 'Amount: ' + rec.amount + ' USDT';
+        document.getElementById('infoTime').textContent = 'Submitted: ' + (rec.confirmedAt || rec.created);
+        if(rec.screenshot){ const img = document.getElementById('imgThumb'); img.src = rec.screenshot; img.style.display = 'block'; }
+      }
+    })();
+  </script>
+</body>
+</html>
