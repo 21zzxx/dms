@@ -24,34 +24,6 @@
     </div>
   </div>
   <script>
-    (async ()=>{
-      const lastId = localStorage.getItem('dmall_last_recharge');
-      const token = localStorage.getItem('dmall_token');
-      // try remote fetch of user's recharges
-      if (token){
-        try{
-          const res = await fetch('/api/recharges', { headers: { 'Authorization': 'Bearer ' + token } });
-          if (res.ok){
-            const data = await res.json();
-            // try find by remote id suffix if lastId starts with r_
-            let rec = null;
-            if (lastId && lastId.startsWith('r_')){
-              const rid = Number(lastId.slice(2));
-              rec = data.recharges.find(r => r.id === rid);
-            }
-            // fallback: use first recharge
-            if (!rec && data.recharges.length) rec = data.recharges[0];
-            if (rec){
-              document.getElementById('infoAmount').textContent = 'Amount: ' + rec.amount + ' USDT';
-              document.getElementById('infoTime').textContent = 'Submitted: ' + new Date(rec.created_at).toLocaleString();
-              if(rec.screenshot){ const img = document.getElementById('imgThumb'); img.src = rec.screenshot; img.style.display = 'block'; }
-              return;
-            }
-          }
-        }catch(e){ /* ignore and fallback */ }
-      }
-
-      // fallback to localStorage
       const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
       const rec = db.find(r=>r.id === lastId) || null;
       if(rec){
@@ -59,7 +31,6 @@
         document.getElementById('infoTime').textContent = 'Submitted: ' + (rec.confirmedAt || rec.created);
         if(rec.screenshot){ const img = document.getElementById('imgThumb'); img.src = rec.screenshot; img.style.display = 'block'; }
       }
-    })();
   </script>
 </body>
 </html>

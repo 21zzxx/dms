@@ -23,30 +23,6 @@
   </div>
 
   <script>
-    (async ()=>{
-      const lastId = localStorage.getItem('dmall_last_withdraw');
-      const token = localStorage.getItem('dmall_token');
-      if(token){
-        try{
-          const res = await fetch('/api/withdraws', { headers: { 'Authorization': 'Bearer ' + token } });
-          if(res.ok){
-            const data = await res.json();
-            let rec = null;
-            if(lastId && lastId.startsWith('w_')){
-              const rid = Number(lastId.slice(2));
-              rec = data.withdraws && data.withdraws.find(w => w.id === rid);
-            }
-            if(!rec && data.withdraws && data.withdraws.length) rec = data.withdraws[0];
-            if(rec){
-              document.getElementById('infoAmount').textContent = 'Amount: ' + rec.amount;
-              document.getElementById('infoDest').textContent = 'Destination: ' + (rec.dest || rec.destination || '--');
-              document.getElementById('infoTime').textContent = 'Submitted: ' + new Date(rec.created_at || rec.created).toLocaleString();
-              return;
-            }
-          }
-        }catch(e){/*fallback*/}
-      }
-
       const db = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
       const rec = db.find(r=>r.id === lastId) || null;
       if(rec){
@@ -54,7 +30,6 @@
         document.getElementById('infoDest').textContent = 'Destination: ' + rec.dest;
         document.getElementById('infoTime').textContent = 'Submitted: ' + (rec.created || new Date().toISOString());
       }
-    })();
   </script>
 </body>
 </html>

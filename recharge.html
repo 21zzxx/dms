@@ -67,26 +67,14 @@
     }
     setSelection('optCurrency'); setSelection('optNetwork'); setSelection('optPayments');
 
-    // save: if logged in, POST to API, otherwise store locally in localStorage
-    async function saveRechargeRemote(form){
-      const token = localStorage.getItem('dmall_token');
-      if (!token) return null;
-      try{
-        const res = await fetch('/api/recharges', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(form) });
-        if(!res.ok) return null;
-        const data = await res.json();
-        return 'r_' + data.id; // return remote id prefixed
-      }catch(e){ return null; }
-    }
-
-    function saveRechargeLocal(form){
+    function saveRecharge(form){
       const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
       db.push(form);
       localStorage.setItem('dmall_recharges', JSON.stringify(db));
       return form.id;
     }
 
-    document.getElementById('btnAccept').addEventListener('click', async ()=>{
+    document.getElementById('btnAccept').addEventListener('click', ()=>{
       const amount = Number(document.getElementById('amount').value || 0);
       if(!amount || amount <= 0){ alert('Please enter a valid amount'); return; }
       const username = document.getElementById('username').value || '';
@@ -94,19 +82,10 @@
       const network = document.querySelector('#optNetwork .option.selected').dataset.value;
       const payments = document.querySelector('#optPayments .option.selected').dataset.value;
 
-      const idLocal = 'r_' + Date.now();
-      const form = { id: idLocal, username, amount, currency, network, payments, created: new Date().toISOString() };
-
-      // try remote first
-      const remoteId = await saveRechargeRemote({ method: currency, network, amount, name: username });
-      if (remoteId){
-        localStorage.setItem('dmall_last_recharge', remoteId);
-        // also keep a local copy for quick UI
-        saveRechargeLocal(Object.assign({}, form, { remoteId }));
-      } else {
-        saveRechargeLocal(form);
-        localStorage.setItem('dmall_last_recharge', idLocal);
-      }
+      const id = 'r_' + Date.now();
+      const form = { id, username, amount, currency, network, payments, created: new Date().toISOString() };
+      saveRecharge(form);
+      localStorage.setItem('dmall_last_recharge', id);
 
       // redirect to confirmation page
       window.location.href = 'recharge-confirm.html';

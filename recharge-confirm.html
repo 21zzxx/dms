@@ -70,37 +70,17 @@
       reader.readAsDataURL(f);
     });
 
-    btnConfirm.addEventListener('click', async ()=>{
+    btnConfirm.addEventListener('click', ()=>{
       const src = preview.src;
       if(!src){ alert('Please upload a screenshot before confirming.'); return; }
-      // if remote id exists and user is logged in, POST update to server
-      const token = localStorage.getItem('dmall_token');
-      if (token && lastId && lastId.startsWith('r_')){
-        // send screenshot to server by creating a new recharge if remote id absent
-        try{
-          // If remote id numeric part
-          const remoteId = lastId.startsWith('r_') ? lastId.slice(2) : null;
-          // We will PATCH by inserting screenshot into the recharges table via admin or a custom endpoint. Simpler: create a new confirm endpoint isn't implemented; instead, attach screenshot by creating a small client-side update: call /api/recharges to create a record with screenshot
-          const payload = { method: rec.currency || rec.method || 'USDT', network: rec.network, amount: rec.amount, name: rec.username || rec.name, screenshot: src };
-          const res = await fetch('/api/recharges', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(payload) });
-          if (res.ok){
-            msg.style.display = 'block';
-            setTimeout(()=>{ window.location.href = 'recharge-success.html'; }, 1200);
-            return;
-          }
-        }catch(e){ console.warn('Remote confirm failed, falling back to local'); }
-      }
-
-      // fallback: store into the recharge record locally
-      const localDb = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
-      const idx = localDb.findIndex(r=>r.id === lastId);
+      const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
+      const idx = db.findIndex(r=>r.id === lastId);
       if(idx === -1){ alert('Recharge record not found.'); return; }
-      localDb[idx].screenshot = src;
-      localDb[idx].confirmed = true;
-      localDb[idx].confirmedAt = new Date().toISOString();
-      localStorage.setItem('dmall_recharges', JSON.stringify(localDb));
+      db[idx].screenshot = src;
+      db[idx].confirmed = true;
+      db[idx].confirmedAt = new Date().toISOString();
+      localStorage.setItem('dmall_recharges', JSON.stringify(db));
       msg.style.display = 'block';
-      // redirect to success page after brief delay
       setTimeout(()=>{ window.location.href = 'recharge-success.html'; }, 1500);
     });
 

@@ -41,25 +41,14 @@
   </div>
 
   <script>
-    async function saveWithdrawRemote(payload){
-      const token = localStorage.getItem('dmall_token');
-      if(!token) return null;
-      try{
-        const res = await fetch('/api/withdraws', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(payload) });
-        if(!res.ok) return null;
-        const data = await res.json();
-        return 'w_' + data.id;
-      }catch(e){ return null; }
-    }
-
-    function saveWithdrawLocal(rec){
+    function saveWithdraw(rec){
       const db = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
       db.push(rec);
       localStorage.setItem('dmall_withdraws', JSON.stringify(db));
       return rec.id;
     }
 
-    document.getElementById('btnWithdraw').addEventListener('click', async ()=>{
+    document.getElementById('btnWithdraw').addEventListener('click', ()=>{
       const method = document.getElementById('method').value;
       const amount = Number(document.getElementById('amount').value || 0);
       const dest = document.getElementById('dest').value.trim();
@@ -67,41 +56,10 @@
       if(!amount || amount <= 0) return alert('Enter a valid amount');
       if(!dest) return alert('Please provide a destination address');
 
-      const idLocal = 'w_' + Date.now();
-      const rec = { id: idLocal, method, amount, dest, note, created: new Date().toISOString(), status: 'pending' };
-
-      const remote = await saveWithdrawRemote({ method, amount, dest, note });
-      if(remote){
-        localStorage.setItem('dmall_last_withdraw', remote);
-        // keep local copy too
-        saveWithdrawLocal(Object.assign({}, rec, { remoteId: remote }));
-      } else {
-        // if server responded with an error, saveWithdrawRemote returned null; try to detect server response
-        // We already fallback to local save, but ensure user sees a helpful message if the server rejected due to balance
-        // Attempt a direct fetch to capture the error message if token present
-        const token = localStorage.getItem('dmall_token');
-        if(token){
-          try{
-            const resp = await fetch('/api/withdraws', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ method, amount, dest, note }) });
-            const data = await resp.json();
-            if(!resp.ok){
-              alert(data.error || 'Withdraw failed');
-              return;
-            }
-            const remoteId = 'w_' + data.id;
-            localStorage.setItem('dmall_last_withdraw', remoteId);
-            saveWithdrawLocal(Object.assign({}, rec, { remoteId }));
-            window.location.href = 'withdraw-success.html';
-            return;
-          }catch(e){
-            // network or server error; fallback to local save
-          }
-        }
-
-        saveWithdrawLocal(rec);
-        localStorage.setItem('dmall_last_withdraw', idLocal);
-      }
-
+      const id = 'w_' + Date.now();
+      const rec = { id, method, amount, dest, note, created: new Date().toISOString(), status: 'pending' };
+      saveWithdraw(rec);
+      localStorage.setItem('dmall_last_withdraw', id);
       window.location.href = 'withdraw-success.html';
     });
   </script>

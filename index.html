@@ -145,15 +145,6 @@
             <!-- Replace the img below with your logo later, e.g. <img id="logo" src="/assets/logo.png" alt="Logo"> -->
             <img id="logo" class="logo" alt="Logo">
         </a>
-        <div id="navUser" style="margin-left:auto;display:flex;align-items:center;gap:12px;font-family:system-ui;font-size:14px;color:#0b5fff">
-          <!-- Populated by JS: shows login link or username + logout -->
-          <a id="navLoginLink" href="login.html" style="color:inherit;text-decoration:none;display:none">Log in</a>
-          <a id="navSignupLink" href="signup.html" style="color:inherit;text-decoration:none;display:none">Sign up</a>
-          <div id="navUserInfo" style="display:none;align-items:center;gap:8px">
-            <span id="navUsername" style="color:#0b5fff;font-weight:600"></span>
-            <button id="btnLogout" style="background:#fff;border:1px solid #e5e7eb;padding:6px 8px;border-radius:6px;cursor:pointer">Logout</button>
-          </div>
-        </div>
     </nav>
     <!-- Action bar: same height as the navbar, sits below it -->
     <div class="action-bar" role="region" aria-label="Quick actions">
@@ -332,67 +323,21 @@
     })();
     </script>
     <script>
-    // Authentication UI and gating
+    // Wire action buttons to pages
     (function(){
-        const token = localStorage.getItem('dmall_token');
-        const navLogin = document.getElementById('navLoginLink');
-        const navSignup = document.getElementById('navSignupLink');
-        const navUserInfo = document.getElementById('navUserInfo');
-        const navUsername = document.getElementById('navUsername');
-        const btnLogout = document.getElementById('btnLogout');
         const btnRecharge = document.getElementById('btnRecharge');
-
-        function showLoggedOut(){
-            navLogin.style.display = 'inline';
-            navSignup.style.display = 'inline';
-            navUserInfo.style.display = 'none';
-        }
-        function showLoggedIn(user){
-            navLogin.style.display = 'none';
-            navSignup.style.display = 'none';
-            navUserInfo.style.display = 'flex';
-            navUsername.textContent = user && user.username ? user.username : 'User';
-        }
-
-        // If no token, always open login.html (per your request: site should open at the login page at all times)
-        if(!token){
-            // If we're not already on login.html, redirect there. Use filename-based URLs.
-            if(!window.location.pathname.endsWith('login.html')){
-                window.location.href = 'login.html';
-                return;
-            }
-            showLoggedOut();
-        } else {
-            // show user info in navbar
-            const user = JSON.parse(localStorage.getItem('dmall_user') || 'null');
-            showLoggedIn(user);
-        }
-
-        // Recharge button: if not logged in, redirect to login page; else open recharge form
         if(btnRecharge){
-            btnRecharge.addEventListener('click', (e) => {
-                const t = localStorage.getItem('dmall_token');
-                if(!t){ window.location.href = 'login.html'; return; }
+            btnRecharge.addEventListener('click', () => {
                 window.location.href = 'recharge.html';
             });
         }
 
         const btnWithdraw = document.getElementById('btnWithdraw');
         if(btnWithdraw){
-            btnWithdraw.addEventListener('click', (e) => {
-                const t = localStorage.getItem('dmall_token');
-                if(!t){ window.location.href = 'login.html'; return; }
+            btnWithdraw.addEventListener('click', () => {
                 window.location.href = 'withdraw.html';
             });
         }
-
-        // Logout: clear token and redirect to login.html
-        btnLogout && btnLogout.addEventListener('click', ()=>{
-            localStorage.removeItem('dmall_token');
-            localStorage.removeItem('dmall_user');
-            // keep file-based url
-            window.location.href = 'login.html';
-        });
     })();
     </script>
 </body>
