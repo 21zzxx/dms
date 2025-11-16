@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams - D MALL</title>
+    <style>
+        :root {
+            --navbar-height: 64px;
+            --page-bg: #f7f8fa;
+        }
+        html, body { margin: 0; padding: 0; background: var(--page-bg); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+        /* Navbar styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--navbar-height);
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            height: 40px;
+            width: auto;
+        }
+        .navbar a.back-btn {
+            margin-left: auto;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #111827;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .navbar a.back-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Page content */
+        main {
+            padding-top: var(--navbar-height);
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0 0 8px 0;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+        }
+
+        /* Teams grid */
+        .teams-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0 0 16px 0;
+        }
+
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .team-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .team-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .team-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0 0 8px 0;
+        }
+
+        .team-members-count {
+            font-size: 13px;
+            color: #64748b;
+            margin: 0 0 12px 0;
+        }
+
+        .team-description {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+            margin: 0 0 16px 0;
+        }
+
+        .team-members-list {
+            border-top: 1px solid #f0f0f0;
+            padding-top: 12px;
+        }
+
+        .member {
+            font-size: 12px;
+            color: #64748b;
+            padding: 4px 0;
+        }
+
+        .member-avatar {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 6px;
+        }
+
+        .join-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: #0b5fff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .join-btn:hover {
+            background: #0a4fd8;
+        }
+
+        .joined-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Stats section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 8px 0;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .teams-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            main {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <a href="index.html" class="navbar-brand" aria-label="Home">
+            <img class="logo" alt="Logo">
+        </a>
+        <a href="index.html" class="back-btn">← Back</a>
+    </nav>
+
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">Teams</h1>
+            <p class="page-subtitle">Join teams and collaborate with other D MALL users</p>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p class="stat-label">Your Teams</p>
+                <p class="stat-value" id="myTeamsCount">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Total Members</p>
+                <p class="stat-value" id="totalMembersCount">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Active Teams</p>
+                <p class="stat-value" id="activeTeamsCount">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Team Bonus</p>
+                <p class="stat-value" id="teamBonus">0%</p>
+            </div>
+        </div>
+
+        <!-- Teams Section -->
+        <div class="teams-section">
+            <h2 class="section-title">Available Teams</h2>
+            <div class="teams-grid" id="teamsGrid">
+                <!-- Teams will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+    (function(){
+        // Random name generator
+        const firstNames = ['Alex', 'Bailey', 'Casey', 'Dakota', 'Elliott', 'Finley', 'Griffin', 'Harper', 'Ivy', 'Jordan', 'Kai', 'Logan', 'Morgan', 'Nova', 'Oscar', 'Parker', 'Quinn', 'Riley', 'Sage', 'Taylor', 'Uma', 'Victor', 'Whitney', 'Xavier', 'Yara', 'Zane', 'Amber', 'Blake', 'Cameron', 'Drew', 'Eden', 'Falcon', 'Gray', 'Hudson', 'Indigo', 'Jesse', 'Kade', 'Lane', 'Marley', 'Nash', 'Olive', 'Phoenix', 'River', 'Storm', 'Valerie', 'Wesley'];
+        const lastNames = ['Anderson', 'Baker', 'Chen', 'Davis', 'Evans', 'Fisher', 'Garcia', 'Harrison', 'Ibrahim', 'Jackson', 'Khan', 'Liam', 'Martinez', 'Nelson', 'O\'Brien', 'Patterson', 'Quinn', 'Roberts', 'Smith', 'Thompson', 'Umar', 'Vargas', 'Williams', 'Xavier', 'Young', 'Zhang'];
+        
+        function generateRandomName(){
+            const first = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const last = lastNames[Math.floor(Math.random() * lastNames.length)];
+            return `${first} ${last}`;
+        }
+        
+        function generateUniqueNames(count){
+            const names = [];
+            const usedNames = new Set();
+            while(names.length < count){
+                const name = generateRandomName();
+                if(!usedNames.has(name)){
+                    names.push(name);
+                    usedNames.add(name);
+                }
+            }
+            return names;
+        }
+
+        // Get or initialize teams data from localStorage
+        function getTeamsData(){
+            const stored = localStorage.getItem('dmall_teams');
+            if(stored) return JSON.parse(stored);
+            
+            // Default teams with random member names
+            const defaultTeams = [
+                {
+                    id: 'team_001',
+                    name: 'Traders United',
+                    description: 'A community of active traders sharing strategies and insights.',
+                    members: generateUniqueNames(3),
+                    maxMembers: 50,
+                    createdAt: new Date().toISOString(),
+                    joined: false
+                },
+                {
+                    id: 'team_002',
+                    name: 'DeFi Enthusiasts',
+                    description: 'Focused on decentralized finance opportunities and crypto trading.',
+                    members: generateUniqueNames(4),
+                    maxMembers: 100,
+                    createdAt: new Date().toISOString(),
+                    joined: false
+                },
+                {
+                    id: 'team_003',
+                    name: 'Staking Squad',
+                    description: 'We maximize staking rewards through collective pooling strategies.',
+                    members: generateUniqueNames(2),
+                    maxMembers: 30,
+                    createdAt: new Date().toISOString(),
+                    joined: false
+                },
+                {
+                    id: 'team_004',
+                    name: 'New Traders',
+                    description: 'A supportive group for newcomers learning the ropes of crypto trading.',
+                    members: generateUniqueNames(5),
+                    maxMembers: 75,
+                    createdAt: new Date().toISOString(),
+                    joined: false
+                }
+            ];
+            
+            localStorage.setItem('dmall_teams', JSON.stringify(defaultTeams));
+            return defaultTeams;
+        }
+
+        function saveTeamsData(teams){
+            localStorage.setItem('dmall_teams', JSON.stringify(teams));
+        }
+
+        function getMyTeams(){
+            const stored = localStorage.getItem('dmall_my_teams');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function saveMyTeams(teamIds){
+            localStorage.setItem('dmall_my_teams', JSON.stringify(teamIds));
+        }
+
+        function joinTeam(teamId){
+            const teams = getTeamsData();
+            const team = teams.find(t => t.id === teamId);
+            if(!team) return;
+
+            const myTeams = getMyTeams();
+            if(!myTeams.includes(teamId)){
+                myTeams.push(teamId);
+                saveMyTeams(myTeams);
+            }
+
+            team.joined = true;
+            saveTeamsData(teams);
+            render();
+        }
+
+        function leaveTeam(teamId){
+            const teams = getTeamsData();
+            const team = teams.find(t => t.id === teamId);
+            if(!team) return;
+
+            const myTeams = getMyTeams();
+            const idx = myTeams.indexOf(teamId);
+            if(idx !== -1){
+                myTeams.splice(idx, 1);
+                saveMyTeams(myTeams);
+            }
+
+            team.joined = false;
+            saveTeamsData(teams);
+            render();
+        }
+
+        function render(){
+            const teams = getTeamsData();
+            const myTeams = getMyTeams();
+            const grid = document.getElementById('teamsGrid');
+
+            // Clear grid
+            grid.innerHTML = '';
+
+            // Render each team
+            teams.forEach(team => {
+                const isJoined = myTeams.includes(team.id);
+                const card = document.createElement('div');
+                card.className = 'team-card';
+
+                const membersList = team.members.map((m, i) => {
+                    const initials = m.split(' ').map(p => p[0]).join('').toUpperCase();
+                    return `<div class="member"><span class="member-avatar">${initials}</span>${m}</div>`;
+                }).join('');
+
+                const actionBtn = isJoined 
+                    ? `<span class="joined-badge">✓ Joined</span>`
+                    : `<button class="join-btn">Join Team</button>`;
+
+                card.innerHTML = `
+                    <h3 class="team-name">${team.name}</h3>
+                    <p class="team-members-count">${team.members.length} / ${team.maxMembers} members</p>
+                    <p class="team-description">${team.description}</p>
+                    <div class="team-members-list">
+                        ${membersList}
+                    </div>
+                    ${actionBtn}
+                `;
+
+                const btn = card.querySelector('.join-btn');
+                if(btn){
+                    btn.addEventListener('click', () => joinTeam(team.id));
+                }
+
+                grid.appendChild(card);
+            });
+
+            // Update stats
+            document.getElementById('myTeamsCount').textContent = myTeams.length;
+            document.getElementById('totalMembersCount').textContent = teams.reduce((sum, t) => sum + t.members.length, 0);
+            document.getElementById('activeTeamsCount').textContent = teams.length;
+            document.getElementById('teamBonus').textContent = Math.min(myTeams.length * 5, 25) + '%';
+        }
+
+        // Initial render
+        render();
+    })();
+    </script>
+</body>
+</html>

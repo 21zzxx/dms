@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks - D MALL</title>
+    <style>
+        :root {
+            --navbar-height: 64px;
+            --page-bg: #f3f5f9;
+            --card-bg: #ffffff;
+            --muted: #64748b;
+            --accent: #0b5fff;
+            --radius: 12px;
+        }
+        html, body { margin: 0; padding: 0; background: var(--page-bg); font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: #0f172a; }
+        main { padding-top: calc(var(--navbar-height) * 2); padding-bottom: 96px; padding-left: 20px; padding-right: 20px; max-width: 1100px; margin: 0 auto; }
+        .page-header { display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-top:8px; }
+        .page-title { font-size:22px; font-weight:700; margin: 0; }
+        .page-sub { color:var(--muted); font-size:13px; margin:0; }
+
+        .task-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top:18px; }
+
+        .task-item {
+            background: linear-gradient(180deg, var(--card-bg) 0%, #fbfdff 100%);
+            border-radius: var(--radius);
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+            transition: transform 160ms ease, box-shadow 160ms ease;
+            cursor: pointer;
+        }
+        .task-item:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(15,23,42,0.09); }
+
+        .task-logo { width:56px; height:56px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:28px; background:linear-gradient(135deg,#eef2ff, #f0f9ff); }
+
+        .task-content { flex:1; min-width:0; }
+        .task-header { display:flex; align-items:center; gap:10px; }
+        .level-badge { background: rgba(11,95,255,0.08); color: var(--accent); padding:6px 8px; border-radius:999px; font-weight:600; font-size:12px; }
+        .task-name { font-size:16px; font-weight:700; margin:0; color:#0f172a; }
+        .task-reward { color:var(--muted); font-size:13px; margin:6px 0 0 0; }
+
+        .cta { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+        .select-btn { background: transparent; border: 1px solid #e6eefc; color: var(--accent); padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; }
+        .select-btn:hover { background: rgba(11,95,255,0.04); }
+
+        @media (max-width:720px){
+            .page-header{flex-direction:column;align-items:flex-start}
+            .task-item{padding:14px}
+            .task-logo{width:48px;height:48px}
+        }
+
+        /* Bottom nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; border-top: 1px solid #f0f0f0; z-index: 999; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; background: transparent; border: none; cursor: pointer; text-decoration: none; color: #64748b; font-size: 12px; transition: color 0.2s; }
+        .bottom-nav-item:hover { color: var(--accent); }
+        .bottom-nav-item.active { color: var(--accent); }
+        .bottom-nav-icon { width: 24px; height: 24px; display: block; margin-bottom: 4px; color: inherit; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1 class="page-title">Daily Tasks</h1>
+        <div class="task-list" id="taskList">
+            <!-- Tasks will be loaded here -->
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item" aria-label="Menu">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+            <span>Menu</span>
+        </a>
+        <a href="service.html" class="bottom-nav-item" aria-label="Service">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 1.5H3.75A2.25 2.25 0 001.5 3.75v16.5A2.25 2.25 0 003.75 22.5h16.5a2.25 2.25 0 002.25-2.25V10.5M22.5 1.5l-8.25 8.25M22.5 1.5v5.25M22.5 1.5h-5.25"/></svg>
+            <span>Service</span>
+        </a>
+        <a href="tasks.html" class="bottom-nav-item active" aria-label="Tasks">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+            <span>Tasks</span>
+        </a>
+        <a href="record.html" class="bottom-nav-item" aria-label="Record">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z M9 9h6M9 13h6M9 17h3"/></svg>
+            <span>Record</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-item" aria-label="Profile">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a3 3 0 100-6 3 3 0 000 6zM9 17a6 6 0 0112 0"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script>
+    (function(){
+        // Three options with logos and levels; clicking navigates to invest page
+        const tasks = [
+            { id: 1, name: 'Amazon', slug: 'amazon', level: 1, logo: '🛒', reward: 5 },
+            { id: 2, name: 'Alibaba', slug: 'alibaba', level: 2, logo: '🏬', reward: 10 },
+            { id: 3, name: 'AliExpress', slug: 'aliexpress', level: 3, logo: '📦', reward: 15 }
+        ];
+
+        function render(){
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+
+            tasks.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'task-item';
+                card.addEventListener('click', () => {
+                    // navigate to invest page for this provider
+                    window.location.href = `invest-${t.slug}.html`;
+                });
+
+                const logo = document.createElement('div');
+                logo.className = 'task-logo';
+                logo.textContent = t.logo;
+
+                const content = document.createElement('div');
+                content.className = 'task-content';
+
+                const header = document.createElement('div');
+                header.className = 'task-header';
+
+                const levelBadge = document.createElement('span');
+                levelBadge.className = 'level-badge';
+                levelBadge.textContent = 'Lv ' + t.level;
+
+                const name = document.createElement('p');
+                name.className = 'task-name';
+                name.textContent = t.name;
+
+                header.appendChild(levelBadge);
+                header.appendChild(name);
+
+                const reward = document.createElement('p');
+                reward.className = 'task-reward';
+                reward.textContent = `+${t.reward} USDT`;
+
+                content.appendChild(header);
+                content.appendChild(reward);
+
+                const cta = document.createElement('div');
+                cta.className = 'cta';
+                const selectBtn = document.createElement('button');
+                selectBtn.className = 'select-btn';
+                selectBtn.textContent = 'Enter';
+                selectBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.location.href = `invest-${t.slug}.html`;
+                });
+                cta.appendChild(selectBtn);
+
+                card.appendChild(logo);
+                card.appendChild(content);
+                card.appendChild(cta);
+
+                list.appendChild(card);
+            });
+        }
+
+        render();
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record - D MALL</title>
+    <style>
+        :root {
+            --navbar-height: 64px;
+            --page-bg: #f7f8fa;
+        }
+        html, body { margin: 0; padding: 0; background: var(--page-bg); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+        main { padding-top: calc(var(--navbar-height) * 2); padding-bottom: 80px; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .page-title { font-size: 24px; font-weight: 600; color: #0f172a; margin: 20px 0 20px 0; padding-top: calc(var(--navbar-height) * 2); }
+        .filter-buttons { display: flex; gap: 8px; margin-bottom: 16px; }
+        .filter-btn { padding: 8px 16px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+        .filter-btn.active { background: #0b5fff; color: white; border-color: #0b5fff; }
+        .records-list { display: flex; flex-direction: column; gap: 12px; }
+        .record-item { background: #ffffff; border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+        .record-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .record-icon { font-size: 24px; }
+        .record-info { flex: 1; }
+        .record-type { font-size: 14px; font-weight: 500; color: #0f172a; margin: 0; }
+        .record-time { font-size: 12px; color: #64748b; margin: 4px 0 0 0; }
+        .record-amount { font-size: 16px; font-weight: 600; margin: 0; }
+        .record-amount.positive { color: #10b981; }
+        .record-amount.negative { color: #ef4444; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+        .status-badge.pending { background: #fef3c7; color: #b45309; }
+        .status-badge.approved { background: #d1fae5; color: #065f46; }
+        .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+        .status-badge.paid { background: #d1fae5; color: #065f46; }
+        
+        /* Bottom nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; border-top: 1px solid #f0f0f0; z-index: 999; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; background: transparent; border: none; cursor: pointer; text-decoration: none; color: #64748b; font-size: 12px; transition: color 0.2s; }
+        .bottom-nav-item:hover { color: #0b5fff; }
+        .bottom-nav-item.active { color: #0b5fff; }
+        .bottom-nav-icon { width: 24px; height: 24px; display: block; margin-bottom: 4px; color: inherit; }
+        
+        @media (max-width:640px){
+          main{max-width:100%;padding:20px 16px}
+          .page-title{font-size:20px}
+          .filter-buttons{flex-wrap:wrap}
+          .filter-btn{padding:6px 12px;font-size:11px}
+          .record-item{flex-direction:column;align-items:flex-start;gap:8px}
+          .record-left{width:100%}
+          .record-amount{align-self:flex-end}
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1 class="page-title">Transaction Record</h1>
+                <div style="display:flex; gap:12px; align-items:center; justify-content:space-between;">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="recharge">Recharge</button>
+                        <button class="filter-btn" data-filter="withdraw">Withdraw</button>
+                    </div>
+                    <div>
+                        <button id="processInvestsBtn" class="filter-btn" title="Process matured investments now">Process Investments</button>
+                    </div>
+                </div>
+        <div class="records-list" id="recordsList">
+            <!-- Records will be loaded here -->
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item" aria-label="Menu">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+            <span>Menu</span>
+        </a>
+        <a href="service.html" class="bottom-nav-item" aria-label="Service">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 1.5H3.75A2.25 2.25 0 001.5 3.75v16.5A2.25 2.25 0 003.75 22.5h16.5a2.25 2.25 0 002.25-2.25V10.5M22.5 1.5l-8.25 8.25M22.5 1.5v5.25M22.5 1.5h-5.25"/></svg>
+            <span>Service</span>
+        </a>
+        <a href="tasks.html" class="bottom-nav-item" aria-label="Tasks">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+            <span>Tasks</span>
+        </a>
+        <a href="record.html" class="bottom-nav-item active" aria-label="Record">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z M9 9h6M9 13h6M9 17h3"/></svg>
+            <span>Record</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-item" aria-label="Profile">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a3 3 0 100-6 3 3 0 000 6zM9 17a6 6 0 0112 0"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="balance.js"></script>
+    <script>
+    (function(){
+        let currentFilter = 'all';
+
+        function addRecharge(amount, note){
+            const db = JSON.parse(localStorage.getItem('dmall_recharges')||'[]');
+            const id = 'r_' + (Date.now()) + '_' + Math.floor(Math.random()*1000);
+            const rec = { id, amount: Number(amount), note: note||'investment payout', createdAt: new Date().toISOString(), status: 'approved', approvedAt: new Date().toISOString() };
+            db.unshift(rec);
+            localStorage.setItem('dmall_recharges', JSON.stringify(db));
+            localStorage.setItem('dmall_last_recharge', id);
+            return id;
+        }
+
+        function processInvestments(silent){
+            const invests = JSON.parse(localStorage.getItem('dmall_invests')||'[]');
+            let changed = false;
+            invests.forEach(inv => {
+                if(inv.status === 'pending' && new Date(inv.payoutAt) <= new Date()){
+                    const rid = addRecharge(inv.payout, `investment payout (${inv.provider})`);
+                    inv.status = 'paid';
+                    inv.paidAt = new Date().toISOString();
+                    inv.rechargeId = rid;
+                    changed = true;
+                }
+            });
+            if(changed){
+                localStorage.setItem('dmall_invests', JSON.stringify(invests));
+                if(!silent && typeof alert !== 'undefined') alert('Processed matured investments.');
+            }
+        }
+
+        function getRecords(){
+            const recharges = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
+            const withdraws = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
+            const invests = JSON.parse(localStorage.getItem('dmall_invests') || '[]');
+
+            const records = [];
+
+            recharges.forEach(r => {
+                records.push({
+                    id: r.id,
+                    type: 'recharge',
+                    icon: '💳',
+                    name: 'Recharge',
+                    amount: r.amount,
+                    timestamp: r.createdAt || new Date().toISOString(),
+                    status: r.status || 'approved'
+                });
+            });
+
+            withdraws.forEach(w => {
+                records.push({
+                    id: w.id,
+                    type: 'withdraw',
+                    icon: '📤',
+                    name: 'Withdraw',
+                    amount: w.amount,
+                    timestamp: w.created || new Date().toISOString(),
+                    status: w.status || 'pending'
+                });
+            });
+
+            // Include pending investments as scheduled payouts
+            invests.forEach(inv => {
+                if(inv.status === 'pending'){
+                    records.push({
+                        id: inv.id,
+                        type: 'investment',
+                        icon: '⏳',
+                        name: `Investment (${inv.provider}) - scheduled`,
+                        amount: inv.payout,
+                        timestamp: inv.createdAt || new Date().toISOString(),
+                        status: 'pending'
+                    });
+                } else if(inv.status === 'paid'){
+                    records.push({
+                        id: inv.id,
+                        type: 'investment',
+                        icon: '✅',
+                        name: `Investment (${inv.provider}) - paid`,
+                        amount: inv.payout,
+                        timestamp: inv.paidAt || new Date().toISOString(),
+                        status: 'paid'
+                    });
+                }
+            });
+
+            return records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        }
+
+        function formatDate(timestamp){
+            const date = new Date(timestamp);
+            const today = new Date();
+            const isToday = date.toDateString() === today.toDateString();
+            
+            if(isToday){
+                return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        }
+
+        function getStatusText(status){
+            if(status === 'pending') return '⏳ Pending';
+            if(status === 'approved') return '✓ Approved';
+            if(status === 'rejected') return '✗ Rejected';
+            if(status === 'paid') return '✓ Paid';
+            return status;
+        }
+
+        function render(){
+            const records = getRecords();
+            const filtered = currentFilter === 'all' ? records : records.filter(r => r.type === currentFilter);
+            const list = document.getElementById('recordsList');
+            
+            list.innerHTML = '';
+
+            if(filtered.length === 0){
+                const empty = document.createElement('div');
+                empty.style.cssText = 'text-align: center; padding: 40px 20px; color: #94a3b8;';
+                empty.textContent = 'No transactions yet';
+                list.appendChild(empty);
+                return;
+            }
+
+            filtered.forEach(record => {
+                const item = document.createElement('div');
+                item.className = 'record-item';
+                
+                const left = document.createElement('div');
+                left.className = 'record-left';
+                
+                const icon = document.createElement('div');
+                icon.className = 'record-icon';
+                icon.textContent = record.icon;
+                
+                const info = document.createElement('div');
+                info.className = 'record-info';
+                
+                const type = document.createElement('p');
+                type.className = 'record-type';
+                const statusBadge = document.createElement('span');
+                statusBadge.className = `status-badge ${record.status}`;
+                statusBadge.textContent = getStatusText(record.status);
+                type.textContent = record.name;
+                type.appendChild(statusBadge);
+                
+                const time = document.createElement('p');
+                time.className = 'record-time';
+                time.textContent = formatDate(record.timestamp);
+                
+                info.appendChild(type);
+                info.appendChild(time);
+                left.appendChild(icon);
+                left.appendChild(info);
+
+                const amount = document.createElement('p');
+                const positive = (record.type === 'recharge' || record.type === 'investment');
+                amount.className = `record-amount ${positive ? 'positive' : 'negative'}`;
+                amount.textContent = (positive ? '+' : '-') + record.amount + ' USDT';
+
+                item.appendChild(left);
+                item.appendChild(amount);
+                list.appendChild(item);
+            });
+        }
+
+        // Filter buttons (ignore buttons without data-filter)
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function(){
+                if(!this.dataset.filter) return;
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                render();
+            });
+        });
+
+                // Process any matured investments on load, then render
+                processInvestments();
+                render();
+
+                // Manual processing button (useful for testing)
+                document.getElementById('processInvestsBtn').addEventListener('click', function(){
+                    processInvestments(true);
+                    render();
+                });
+    })();
+    </script>
+</body>
+</html>

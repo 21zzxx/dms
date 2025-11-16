@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service - D MALL</title>
+    <style>
+        :root {
+            --navbar-height: 64px;
+            --page-bg: #f7f8fa;
+        }
+        html, body { margin: 0; padding: 0; background: var(--page-bg); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+        main { padding-top: calc(var(--navbar-height) * 2); padding-bottom: 80px; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .page-title { font-size: 24px; font-weight: 600; color: #0f172a; margin: 20px 0 20px 0; padding-top: calc(var(--navbar-height) * 2); }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+        .service-card { background: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); cursor: pointer; transition: all 0.2s; }
+        .service-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .service-icon { font-size: 32px; margin-bottom: 12px; }
+        .service-name { font-size: 16px; font-weight: 600; color: #0f172a; margin: 0 0 8px 0; }
+        .service-desc { font-size: 13px; color: #64748b; margin: 0; }
+        
+        /* Bottom nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; border-top: 1px solid #f0f0f0; z-index: 999; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; background: transparent; border: none; cursor: pointer; text-decoration: none; color: #64748b; font-size: 12px; transition: color 0.2s; }
+        .bottom-nav-item:hover { color: #0b5fff; }
+        .bottom-nav-item.active { color: #0b5fff; }
+        .bottom-nav-icon { width: 24px; height: 24px; display: block; margin-bottom: 4px; color: inherit; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1 class="page-title">Customer Service</h1>
+        <div style="max-width:800px;margin:20px auto; background:#ffffff; border-radius:8px; padding:24px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+            <p style="margin:0 0 12px 0; color:#374151;">Welcome to D MALL customer service.</p>
+            <p style="margin:0 0 8px 0; color:#6b7280;">Contact options (static):</p>
+            <ul style="margin:8px 0 0 20px; color:#6b7280;">
+                <li>Email: support@dmall.example</li>
+                <li>Working hours: Mon-Fri 9:00 - 18:00 (UTC)</li>
+            </ul>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item" aria-label="Menu">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+            <span>Menu</span>
+        </a>
+        <a href="service.html" class="bottom-nav-item active" aria-label="Service">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 1.5H3.75A2.25 2.25 0 001.5 3.75v16.5A2.25 2.25 0 003.75 22.5h16.5a2.25 2.25 0 002.25-2.25V10.5M22.5 1.5l-8.25 8.25M22.5 1.5v5.25M22.5 1.5h-5.25"/></svg>
+            <span>Service</span>
+        </a>
+        <a href="tasks.html" class="bottom-nav-item" aria-label="Tasks">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+            <span>Tasks</span>
+        </a>
+        <a href="record.html" class="bottom-nav-item" aria-label="Record">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z M9 9h6M9 13h6M9 17h3"/></svg>
+            <span>Record</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-item" aria-label="Profile">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a3 3 0 100-6 3 3 0 000 6zM9 17a6 6 0 0112 0"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+</body>
+</html>

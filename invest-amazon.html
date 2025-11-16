@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Invest - Amazon</title>
+  <style>
+    :root{--navbar-height:64px;--page-bg:#f3f5f9;--card-bg:#ffffff;--accent:#0b5fff;--muted:#64748b;--radius:12px}
+    html,body{margin:0;padding:0;background:var(--page-bg);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:#0f172a}
+    main{padding:calc(var(--navbar-height)*2) 20px 120px;max-width:760px;margin:0 auto}
+    .card{background:linear-gradient(180deg,var(--card-bg),#fbfdff);border-radius:var(--radius);padding:22px;box-shadow:0 10px 30px rgba(15,23,42,0.06)}
+    .provider{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+    .logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#eef2ff,#f0f9ff);display:flex;align-items:center;justify-content:center;font-size:30px}
+    .provider h2{margin:0;font-size:20px}
+    .small{color:var(--muted);font-size:13px}
+    .balance{font-family:'Courier New',monospace;background:#f3f4f6;padding:8px 12px;border-radius:8px;display:inline-block}
+    .form-row{margin:14px 0}
+    input[type=number]{width:100%;padding:12px;border-radius:10px;border:1px solid #e6eefc;background:#fff}
+    .btn{display:inline-block;padding:12px 18px;background:var(--accent);color:#fff;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn:active{transform:translateY(1px)}
+    .result{margin-top:14px;padding:14px;background:#f8fafc;border:1px solid #eef2ff;border-radius:10px;color:#0f172a}
+    @media (max-width:640px){
+      main{padding:calc(var(--navbar-height)*2) 16px 80px}
+      .card{padding:16px}
+      .provider{flex-direction:column;text-align:center;gap:12px}
+      .logo{width:50px;height:50px;font-size:24px}
+      .provider h2{font-size:18px}
+      .btn{width:100%;padding:12px 16px;display:block}
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="card">
+      <div class="provider">
+        <div class="logo">🛒</div>
+        <div>
+          <h2>Amazon Investment</h2>
+          <div class="small">Level 1</div>
+        </div>
+      </div>
+
+      <p>Account balance: <span id="balance" class="balance">0</span> USDT</p>
+
+      <div class="form-row">
+        <label for="amount">Amount to invest (USDT)</label>
+        <input id="amount" type="number" min="1" step="0.01" placeholder="Enter amount">
+      </div>
+
+      <button id="investBtn" class="btn">Invest</button>
+
+      <div id="result" class="result" style="display:none"></div>
+    </div>
+  </main>
+
+  <script src="balance.js"></script>
+  <script>
+  (function(){
+    function addInvestment(provider, amount, commission, payout, withdrawId){
+      const db = JSON.parse(localStorage.getItem('dmall_invests')||'[]');
+      const id = 'inv_' + (Date.now()) + '_' + Math.floor(Math.random()*1000);
+      const createdAt = new Date().toISOString();
+      const payoutAt = new Date(Date.now() + 24*60*60*1000).toISOString();
+      const rec = { id, provider, amount: Number(amount), commission: Number(commission), payout: Number(payout), createdAt, payoutAt, status: 'pending', withdrawId };
+      db.unshift(rec);
+      localStorage.setItem('dmall_invests', JSON.stringify(db));
+      localStorage.setItem('dmall_last_invest', id);
+      return id;
+    }
+
+    function updateBalanceDisplay(){
+      document.getElementById('balance').textContent = getBalance().toFixed(2);
+    }
+
+    updateBalanceDisplay();
+
+    document.getElementById('investBtn').addEventListener('click', function(){
+      const amountEl = document.getElementById('amount');
+      const val = Number(amountEl.value);
+      if(!val || val <= 0){ alert('Enter a valid amount'); return; }
+      const bal = getBalance();
+      if(val > bal){ alert('Insufficient balance'); return; }
+
+      // Deduct invested amount using balance.js
+      subtractBalance(val);
+
+      // Record the withdrawal with status pending
+      const db = JSON.parse(localStorage.getItem('dmall_withdraws')||'[]');
+      const wid = 'w_' + Date.now();
+      const rec = { id: wid, method: 'USDT', amount: Number(val), dest: 'investment', note: 'invested in Amazon', created: new Date().toISOString(), status: 'pending' };
+      db.push(rec);
+      localStorage.setItem('dmall_withdraws', JSON.stringify(db));
+
+      // Random commission between 0% and 15%
+      const pct = Math.random() * 0.15;
+      const commission = Math.round((val * pct) * 100) / 100;
+      const payout = Math.round((val + commission) * 100) / 100;
+
+      // Schedule payout in 24 hours
+      const invId = addInvestment('Amazon', val, commission, payout, wid);
+
+      // Show scheduling result
+      const res = document.getElementById('result');
+      res.style.display = 'block';
+      res.innerHTML = `Invested <strong>${val.toFixed(2)} USDT</strong>. Commission (will be applied within 24 hours): <strong>${commission.toFixed(2)} USDT</strong>.<br>Payout scheduled at <strong>${new Date(Date.now() + 24*60*60*1000).toLocaleString()}</strong>.`;
+
+      updateBalanceDisplay();
+
+      // Redirect to record so user can see withdraw and pending investment
+      setTimeout(() => { window.location.href = 'record.html'; }, 1800);
+    });
+  })();
+  </script>
+</body>
+</html>

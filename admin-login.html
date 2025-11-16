@@ -5,49 +5,95 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Login - D MALL</title>
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:24px}
-    .box{max-width:420px;margin:24px auto;padding:20px;border:1px solid #eee;border-radius:8px}
-    input{width:100%;padding:10px;margin-top:8px}
-    button{margin-top:12px;padding:10px 14px}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .container { width: 100%; max-width: 400px; padding: 20px; }
+    .card { background: #ffffff; border-radius: 12px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .logo { text-align: center; font-size: 32px; margin-bottom: 24px; }
+    h2 { font-size: 24px; font-weight: 600; margin-bottom: 8px; color: #111827; text-align: center; }
+    .subtitle { font-size: 13px; color: #6b7280; text-align: center; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+    input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
+    input:focus { outline: none; border-color: #0b5fff; box-shadow: 0 0 0 3px rgba(11, 95, 255, 0.1); }
+    .button-group { display: grid; gap: 12px; margin-top: 24px; }
+    button { padding: 12px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #0b5fff; color: white; }
+    .btn-primary:hover { background: #0a4ed6; }
+    .btn-primary:active { transform: translateY(1px); }
+    .btn-secondary { background: #f3f4f6; color: #111827; border: 1px solid #e5e7eb; }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .msg { margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 13px; display: none; }
+    .msg.error { background: #fee2e2; color: #991b1b; display: block; border: 1px solid #fecaca; }
+    .msg.success { background: #d1fae5; color: #065f46; display: block; border: 1px solid #a7f3d0; }
+    .hint { font-size: 12px; color: #9ca3af; margin-top: 12px; text-align: center; }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>Admin Login</h2>
-    <label>Admin Key</label>
-    <input id="adminKey" placeholder="enter admin key" />
-    <label>Username or Email</label>
-    <input id="usernameOrEmail" placeholder="admin username or email" />
-    <label>Password</label>
-    <input id="password" type="password" placeholder="password" />
-  <button id="btnAdminLogin">Sign in as admin</button>
-  <button id="btnPlaceholder" style="margin-left:8px;margin-top:12px;background:#f3f4f6;color:#111;border:1px solid #ddd;padding:10px 14px">Use placeholder credentials (dev)</button>
-  <div id="msg" style="color:red;margin-top:8px"></div>
+  <div class="container">
+    <div class="card">
+      <div class="logo">🔐</div>
+      <h2>Admin Dashboard</h2>
+      <p class="subtitle">Enter your admin password to continue</p>
+      
+      <div class="form-group">
+        <label for="password">Admin Password</label>
+        <input id="password" type="password" placeholder="Enter admin password" />
+      </div>
+
+      <div class="button-group">
+        <button id="btnLogin" class="btn-primary">Login</button>
+      </div>
+
+      <div id="msg" class="msg"></div>
+    </div>
   </div>
 
   <script>
-    document.getElementById('btnAdminLogin').addEventListener('click', async ()=>{
-      const adminKey = document.getElementById('adminKey').value.trim();
-      const usernameOrEmail = document.getElementById('usernameOrEmail').value.trim();
-      const password = document.getElementById('password').value;
-      const msg = document.getElementById('msg'); msg.textContent = '';
-      if(!adminKey || !usernameOrEmail || !password) return msg.textContent = 'Please fill all fields';
-      try{
-        const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ adminKey, usernameOrEmail, password }) });
-        const data = await res.json();
-        if(!res.ok) return msg.textContent = data.error || 'Login failed';
-        localStorage.setItem('dmall_token', data.token);
-        localStorage.setItem('dmall_user', JSON.stringify(data.user));
+    // Check if already logged in
+    if(localStorage.getItem('dmall_admin_logged_in')){
+      window.location.href = 'admin.html';
+    }
+
+    const msgEl = document.getElementById('msg');
+    const passwordEl = document.getElementById('password');
+
+    function showMessage(text, isError = true){
+      msgEl.textContent = text;
+      msgEl.className = isError ? 'msg error' : 'msg success';
+    }
+
+    document.getElementById('btnLogin').addEventListener('click', ()=>{
+      const password = passwordEl.value.trim();
+      msgEl.className = 'msg';
+      
+      if(!password){
+        showMessage('Please enter a password');
+        return;
+      }
+
+      // Simple hardcoded admin password verification
+      const adminPassword = 'admin123';
+      if(password !== adminPassword){
+        showMessage('Incorrect password');
+        return;
+      }
+
+      // Set admin session
+      localStorage.setItem('dmall_admin_logged_in', 'true');
+      localStorage.setItem('dmall_admin_login_time', new Date().toISOString());
+      
+      showMessage('Login successful!', false);
+      setTimeout(() => {
         window.location.href = 'admin.html';
-      }catch(e){ msg.textContent = 'Network error'; }
+      }, 500);
     });
 
-    // Dev helper: prefill placeholder admin credentials and submit
-    document.getElementById('btnPlaceholder').addEventListener('click', ()=>{
-      document.getElementById('adminKey').value = 'dev-admin-key';
-      document.getElementById('usernameOrEmail').value = 'admin';
-      document.getElementById('password').value = 'adminpass';
-      document.getElementById('btnAdminLogin').click();
+    // Allow Enter key to login
+    passwordEl.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter'){
+        document.getElementById('btnLogin').click();
+      }
     });
   </script>
 </body>

@@ -16,6 +16,13 @@
     input[type=number], input[type=text]{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px}
     .actions{text-align:right;margin-top:12px}
     .btn{background:#0b5fff;color:#fff;padding:10px 14px;border-radius:6px;border:none;cursor:pointer}
+    @media (max-width:640px){
+      .container{max-width:100%;margin:110px 0 80px;padding:16px}
+      .card{padding:14px}
+      .options{gap:8px}
+      .option{padding:10px;font-size:13px}
+      .btn{padding:12px 16px;width:100%;font-size:14px}
+    }
   </style>
 </head>
 <body>
@@ -54,6 +61,7 @@
     </div>
   </div>
 
+  <script src="balance.js"></script>
   <script>
     // small UI handlers
     function setSelection(containerId){
@@ -83,7 +91,7 @@
       const payments = document.querySelector('#optPayments .option.selected').dataset.value;
 
       const id = 'r_' + Date.now();
-      const form = { id, username, amount, currency, network, payments, created: new Date().toISOString() };
+      const form = { id, username, amount, currency, network, payments, createdAt: new Date().toISOString(), status: 'pending', note: 'Recharge request' };
       saveRecharge(form);
       localStorage.setItem('dmall_last_recharge', id);
 

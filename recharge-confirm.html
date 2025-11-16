@@ -3,103 +3,66 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Recharge Confirmation - D MALL</title>
+  <title>Recharge Pending - D MALL</title>
   <style>
     body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0; background:#f7f8fa}
     .container{max-width:720px;margin:110px auto 40px;padding:20px}
-    .card{background:#fff;padding:20px;border-radius:8px;margin-bottom:12px;text-align:center}
-    .amount{font-size:28px;font-weight:600;margin-bottom:10px}
-    .wallet{font-size:14px;color:#0b5fff;word-break:break-all}
-    .qr{width:160px;height:160px;margin:12px auto;background:#fff;display:block}
-    .note{font-size:13px;color:#374151;margin-top:12px}
+    .card{background:#fff;padding:30px 20px;border-radius:8px;text-align:center}
+    .icon{font-size:48px;margin-bottom:16px}
+    .title{font-size:24px;font-weight:600;margin-bottom:8px;color:#111827}
+    .subtitle{font-size:14px;color:#6b7280;margin-bottom:20px}
+    .amount{font-size:32px;font-weight:700;color:#0b5fff;margin:20px 0}
+    .detail{font-size:13px;color:#374151;background:#f3f4f6;padding:12px;border-radius:6px;margin:16px 0;text-align:left}
+    .button{display:inline-block;padding:12px 24px;margin-top:16px;background:#0b5fff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500}
+    .button:hover{background:#0a4ed6}
+    .secondary{background:#f3f4f6;color:#374151}
+    .secondary:hover{background:#e5e7eb}
+    @media (max-width:640px){
+      .container{max-width:100%;margin:80px 0 80px;padding:16px}
+      .button{display:block;width:100%;margin:8px 0}
+      .button:first-of-type{margin-top:16px}
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
+      <div class="icon">⏳</div>
+      <div class="title">Recharge Request Submitted</div>
+      <div class="subtitle">Your recharge is pending admin approval</div>
+      
       <div class="amount" id="displayAmount">-- USDT</div>
-      <canvas id="qrCanvas" class="qr" aria-hidden="true"></canvas>
-      <div class="wallet" id="walletAddr">TRON_WALLET_ADDRESS_PLACEHOLDER</div>
-      <div class="note">Upload a screenshot of your payment confirmation below and click <strong>Confirm Payment</strong></div>
-      <div style="margin-top:12px">
-        <input id="screenshotInput" type="file" accept="image/*">
-        <div style="margin-top:8px"><img id="screenshotPreview" src="" alt="preview" style="max-width:220px;display:none;border-radius:6px;border:1px solid #e5e7eb"></div>
-        <div style="margin-top:12px"><button id="btnConfirm" class="btn">Confirm Payment</button></div>
-        <div id="confirmMsg" style="margin-top:8px;color:green;display:none">Payment confirmed locally. Thank you.</div>
+      
+      <div class="detail">
+        <strong>Request ID:</strong> <span id="requestId">--</span><br>
+        <strong>Submitted:</strong> <span id="submittedTime">--</span><br>
+        <strong>Status:</strong> <span style="color:#f59e0b">⏳ Pending Approval</span>
+      </div>
+      
+      <div style="font-size:13px;color:#6b7280;margin:20px 0">
+        Your recharge request has been submitted successfully. Our admin team will review and approve your request shortly. You will be notified once it's approved.
+      </div>
+      
+      <div>
+        <button class="button" onclick="window.location.href='record.html'">View Request</button>
+        <button class="button secondary" onclick="window.location.href='index.html'">Back to Home</button>
       </div>
     </div>
   </div>
 
+  <script src="balance.js"></script>
   <script>
-  // read last saved recharge id
-  const lastId = localStorage.getItem('dmall_last_recharge');
-  let rec = null;
-  const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
-  rec = db.find(r=>r.id === lastId) || null;
-    const amountEl = document.getElementById('displayAmount');
-    const walletEl = document.getElementById('walletAddr');
-    const canvas = document.getElementById('qrCanvas');
+    const lastId = localStorage.getItem('dmall_last_recharge');
+    const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
+    const rec = db.find(r=>r.id === lastId);
 
-    if(!rec){ amountEl.textContent = 'No recharge found'; }
-    else{
-      amountEl.textContent = rec.amount + ' USDT';
-      // wallet address (placeholder) - in real app this comes from server
-      const wallet = 'TXYZ12345EXAMPLEADDRESSFORTRON';
-      walletEl.textContent = wallet;
-      // generate simple QR code (very small, not robust) - we'll draw the wallet text onto canvas as placeholder
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = '#111827'; ctx.font = '12px monospace';
-      wrapText(ctx, wallet, 8, 24, 144, 14);
-    }
-
-    // screenshot handling
-    const input = document.getElementById('screenshotInput');
-    const preview = document.getElementById('screenshotPreview');
-    const btnConfirm = document.getElementById('btnConfirm');
-    const msg = document.getElementById('confirmMsg');
-
-    input.addEventListener('change', e=>{
-      const f = e.target.files && e.target.files[0];
-      if(!f) return;
-      const reader = new FileReader();
-      reader.onload = function(ev){
-        preview.src = ev.target.result;
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(f);
-    });
-
-    btnConfirm.addEventListener('click', ()=>{
-      const src = preview.src;
-      if(!src){ alert('Please upload a screenshot before confirming.'); return; }
-      const db = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
-      const idx = db.findIndex(r=>r.id === lastId);
-      if(idx === -1){ alert('Recharge record not found.'); return; }
-      db[idx].screenshot = src;
-      db[idx].confirmed = true;
-      db[idx].confirmedAt = new Date().toISOString();
-      localStorage.setItem('dmall_recharges', JSON.stringify(db));
-      msg.style.display = 'block';
-      setTimeout(()=>{ window.location.href = 'recharge-success.html'; }, 1500);
-    });
-
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight){
-      const words = text.split(' ');
-      let line = '';
-      for(let n=0;n<words.length;n++){
-        const testLine = line + words[n] + ' ';
-        const metrics = ctx.measureText(testLine);
-        const testWidth = metrics.width;
-        if(testWidth > maxWidth && n > 0){
-          ctx.fillText(line, x, y);
-          line = words[n] + ' ';
-          y += lineHeight;
-        } else {
-          line = testLine;
-        }
-      }
-      ctx.fillText(line, x, y);
+    if(rec){
+      document.getElementById('displayAmount').textContent = rec.amount + ' USDT';
+      document.getElementById('requestId').textContent = rec.id;
+      const date = new Date(rec.createdAt);
+      document.getElementById('submittedTime').textContent = date.toLocaleString();
+    } else {
+      document.getElementById('displayAmount').textContent = 'Recharge not found';
     }
   </script>
 </body>

@@ -3,33 +3,66 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Withdraw Submitted - D MALL</title>
+  <title>Withdrawal Pending - D MALL</title>
   <style>
     body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, Arial; margin:0; background:#f7f8fa}
     .container{max-width:720px;margin:110px auto 40px;padding:20px}
-    .card{background:#fff;padding:20px;border-radius:8px;margin-bottom:12px;text-align:center}
-    .info{font-size:16px;margin:8px 0}
+    .card{background:#fff;padding:30px 20px;border-radius:8px;text-align:center}
+    .icon{font-size:48px;margin-bottom:16px}
+    .title{font-size:24px;font-weight:600;margin-bottom:8px;color:#111827}
+    .subtitle{font-size:14px;color:#6b7280;margin-bottom:20px}
+    .amount{font-size:32px;font-weight:700;color:#0b5fff;margin:20px 0}
+    .detail{font-size:13px;color:#374151;background:#f3f4f6;padding:12px;border-radius:6px;margin:16px 0;text-align:left}
+    .button{display:inline-block;padding:12px 24px;margin-top:12px;background:#0b5fff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;margin-right:8px}
+    .button:hover{background:#0a4ed6}
+    .secondary{background:#f3f4f6;color:#374151}
+    .secondary:hover{background:#e5e7eb}
+    @media (max-width:640px){
+      .container{max-width:100%;margin:80px 0 80px;padding:16px}
+      .button{display:block;width:100%;margin:8px 0}
+      .button:first-of-type{margin-top:16px}
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <div class="ok">Withdraw request submitted</div>
-      <div class="info" id="infoAmount">Amount: --</div>
-      <div class="info" id="infoDest">Destination: --</div>
-      <div class="info" id="infoTime">Time: --</div>
-      <div style="margin-top:12px"><a href="index.html">Return to home</a></div>
+      <div class="icon">⏳</div>
+      <div class="title">Withdrawal Request Submitted</div>
+      <div class="subtitle">Your withdrawal is pending admin approval</div>
+      
+      <div class="amount" id="displayAmount">-- USDT</div>
+      
+      <div class="detail">
+        <strong>Request ID:</strong> <span id="requestId">--</span><br>
+        <strong>Destination:</strong> <span id="destination">--</span><br>
+        <strong>Status:</strong> <span style="color:#f59e0b">⏳ Pending Approval</span>
+      </div>
+      
+      <div style="font-size:13px;color:#6b7280;margin:20px 0">
+        Your withdrawal request has been submitted successfully. The amount has been deducted from your balance. Our admin team will review and approve your request shortly.
+      </div>
+      
+      <div>
+        <button class="button" onclick="window.location.href='record.html'">View Request</button>
+        <button class="button secondary" onclick="window.location.href='index.html'">Back to Home</button>
+      </div>
     </div>
   </div>
 
+  <script src="balance.js"></script>
   <script>
-      const db = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
-      const rec = db.find(r=>r.id === lastId) || null;
-      if(rec){
-        document.getElementById('infoAmount').textContent = 'Amount: ' + rec.amount;
-        document.getElementById('infoDest').textContent = 'Destination: ' + rec.dest;
-        document.getElementById('infoTime').textContent = 'Submitted: ' + (rec.created || new Date().toISOString());
-      }
+    const lastId = localStorage.getItem('dmall_last_withdraw');
+    const db = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
+    const rec = db.find(r=>r.id === lastId);
+    
+    if(rec){
+      document.getElementById('displayAmount').textContent = rec.amount + ' USDT';
+      document.getElementById('requestId').textContent = rec.id;
+      document.getElementById('destination').textContent = rec.dest;
+    } else {
+      document.getElementById('displayAmount').textContent = 'Withdrawal not found';
+    }
   </script>
 </body>
 </html>

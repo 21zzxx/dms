@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - D MALL</title>
+    <style>
+        :root {
+            --navbar-height: 64px;
+            --page-bg: #f7f8fa;
+        }
+        html, body { margin: 0; padding: 0; background: var(--page-bg); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+        main { padding-top: calc(var(--navbar-height) * 2); padding-bottom: 80px; padding: 20px; max-width: 600px; margin: 0 auto; }
+        
+        /* Profile header */
+        .profile-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 32px 20px; text-align: center; color: white; margin-bottom: 24px; }
+        .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.3); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+        .profile-name { font-size: 22px; font-weight: 600; margin: 0 0 8px 0; }
+        .profile-id { font-size: 12px; color: rgba(255,255,255,0.8); margin: 0; font-family: 'Courier New', monospace; }
+        
+        /* Stats grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+        .stat-card { background: #ffffff; border-radius: 8px; padding: 16px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+        .stat-value { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0; }
+        .stat-label { font-size: 12px; color: #64748b; margin: 0; }
+        
+        /* Info section */
+        .info-section { background: #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+        .section-title { font-size: 14px; font-weight: 600; color: #0f172a; margin: 0 0 16px 0; }
+        .info-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .info-item:last-child { border-bottom: none; }
+        .info-label { font-size: 13px; color: #64748b; }
+        .info-value { font-size: 13px; font-weight: 500; color: #0f172a; font-family: 'Courier New', monospace; }
+        
+        /* Action buttons */
+        .action-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .action-btn { padding: 12px 16px; background: #0b5fff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.2s; }
+        .action-btn:hover { background: #0a4fd8; }
+        .action-btn.secondary { background: #f3f4f6; color: #0f172a; border: 1px solid #e5e7eb; }
+        .action-btn.secondary:hover { background: #e5e7eb; }
+        
+        /* Bottom nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #ffffff; display: flex; align-items: center; justify-content: space-around; border-top: 1px solid #f0f0f0; z-index: 999; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; background: transparent; border: none; cursor: pointer; text-decoration: none; color: #64748b; font-size: 12px; transition: color 0.2s; }
+        .bottom-nav-item:hover { color: #0b5fff; }
+        .bottom-nav-item.active { color: #0b5fff; }
+        .bottom-nav-icon { width: 24px; height: 24px; display: block; margin-bottom: 4px; color: inherit; }
+        
+        @media (max-width:640px){
+          main{padding:calc(var(--navbar-height)*2) 16px 80px}
+          .profile-header{padding:24px 16px}
+          .stats-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+          .stat-value{font-size:20px}
+          .info-section{padding:16px}
+          .action-buttons{gap:10px}
+          .action-btn{padding:10px 14px;font-size:13px}
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar">👤</div>
+            <h1 class="profile-name" id="profileName">D MALL User</h1>
+            <p class="profile-id" id="profileId">DMALL-0000000000</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p class="stat-value" id="totalRecharge">0</p>
+                <p class="stat-label">Total Recharge</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-value" id="totalWithdraw">0</p>
+                <p class="stat-label">Total Withdraw</p>
+            </div>
+            <div class="stat-card">
+                <p class="stat-value" id="accountBalance">0</p>
+                <p class="stat-label">Balance (USDT)</p>
+            </div>
+        </div>
+
+        <!-- Account Info -->
+        <div class="info-section">
+            <h3 class="section-title">Account Information</h3>
+            <div class="info-item">
+                <span class="info-label">Member Since</span>
+                <span class="info-value" id="joinDate">Today</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">User ID</span>
+                <span class="info-value" id="userIdDisplay">DMALL-0000000000</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Invite Code</span>
+                <span class="info-value" id="inviteCodeDisplay">DMLREF0001</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Teams</span>
+                <span class="info-value" id="teamsCount">0</span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-buttons">
+            <button class="action-btn" onclick="window.location.href='invite.html'">Share Invite Code</button>
+            <button class="action-btn secondary" onclick="alert('Settings coming soon')">Settings</button>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item" aria-label="Menu">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+            <span>Menu</span>
+        </a>
+        <a href="service.html" class="bottom-nav-item" aria-label="Service">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 1.5H3.75A2.25 2.25 0 001.5 3.75v16.5A2.25 2.25 0 003.75 22.5h16.5a2.25 2.25 0 002.25-2.25V10.5M22.5 1.5l-8.25 8.25M22.5 1.5v5.25M22.5 1.5h-5.25"/></svg>
+            <span>Service</span>
+        </a>
+        <a href="tasks.html" class="bottom-nav-item" aria-label="Tasks">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+            <span>Tasks</span>
+        </a>
+        <a href="record.html" class="bottom-nav-item" aria-label="Record">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z M9 9h6M9 13h6M9 17h3"/></svg>
+            <span>Record</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-item active" aria-label="Profile">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a3 3 0 100-6 3 3 0 000 6zM9 17a6 6 0 0112 0"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="balance.js"></script>
+    <script>
+    (function(){
+        const userId = getUserId();
+        const inviteCode = generateInviteCode(userId);
+
+        function generateInviteCode(userId){
+            const numericPart = userId.replace('DMALL-', '');
+            const code = 'DMLREF' + String(parseInt(numericPart.slice(-6))).padStart(7, '0');
+            return code;
+        }
+
+        // Set profile info
+        document.getElementById('profileId').textContent = userId;
+        document.getElementById('userIdDisplay').textContent = userId;
+        document.getElementById('inviteCodeDisplay').textContent = inviteCode;
+
+        // Calculate stats using balance.js
+        const recharges = JSON.parse(localStorage.getItem('dmall_recharges') || '[]');
+        const withdraws = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
+        const myTeams = JSON.parse(localStorage.getItem('dmall_my_teams') || '[]');
+
+        // Get only approved recharges for calculation
+        const approvedRecharges = recharges.filter(r => r.status === 'approved');
+        const totalRecharge = approvedRecharges.reduce((sum, r) => sum + (r.amount || 0), 0);
+        const totalWithdraw = withdraws.reduce((sum, w) => sum + (w.amount || 0), 0);
+        const balance = getBalance(); // Use balance.js function
+
+        document.getElementById('totalRecharge').textContent = totalRecharge;
+        document.getElementById('totalWithdraw').textContent = totalWithdraw;
+        document.getElementById('accountBalance').textContent = balance.toFixed(2);
+        document.getElementById('teamsCount').textContent = myTeams.length;
+
+        // Set join date
+        const joinDate = localStorage.getItem('dmall_join_date');
+        if(!joinDate){
+            const now = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            localStorage.setItem('dmall_join_date', now);
+            document.getElementById('joinDate').textContent = now;
+        } else {
+            document.getElementById('joinDate').textContent = joinDate;
+        }
+    })();
+    </script>
+</body>
+</html>

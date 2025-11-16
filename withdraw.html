@@ -12,6 +12,12 @@
     input, select{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px}
     .actions{text-align:right;margin-top:12px}
     .btn{background:#0b5fff;color:#fff;padding:10px 14px;border-radius:6px;border:none;cursor:pointer}
+    @media (max-width:640px){
+      .container{max-width:100%;margin:110px 0 80px;padding:16px}
+      .card{padding:14px}
+      .actions{text-align:center}
+      .btn{padding:12px 16px;width:100%;font-size:14px}
+    }
   </style>
 </head>
 <body>
@@ -40,6 +46,7 @@
     </div>
   </div>
 
+  <script src="balance.js"></script>
   <script>
     function saveWithdraw(rec){
       const db = JSON.parse(localStorage.getItem('dmall_withdraws') || '[]');
@@ -55,9 +62,14 @@
       const note = document.getElementById('note').value.trim();
       if(!amount || amount <= 0) return alert('Enter a valid amount');
       if(!dest) return alert('Please provide a destination address');
+      
+      const currentBalance = getBalance();
+      if(currentBalance < amount) return alert('Insufficient balance');
 
       const id = 'w_' + Date.now();
       const rec = { id, method, amount, dest, note, created: new Date().toISOString(), status: 'pending' };
+      
+      subtractBalance(amount);
       saveWithdraw(rec);
       localStorage.setItem('dmall_last_withdraw', id);
       window.location.href = 'withdraw-success.html';
