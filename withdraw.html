@@ -25,17 +25,21 @@
     <h2>Withdraw</h2>
 
     <div class="card">
-      <label for="method">Method</label>
-      <!-- Only USDT allowed -->
+      <label for="method">Currency</label>
       <select id="method">
         <option selected>USDT</option>
+      </select>
+
+      <label for="network">Network</label>
+      <select id="network">
+        <option selected>TRON-20</option>
       </select>
 
       <label for="amount">Amount</label>
       <input id="amount" type="number" min="1" placeholder="Enter amount" />
 
-      <label for="dest">Destination address / account</label>
-      <input id="dest" type="text" placeholder="Wallet address or account" />
+      <label for="dest">Destination address</label>
+      <input id="dest" type="text" placeholder="TRON wallet address" />
 
       <label for="note">Note (optional)</label>
       <input id="note" type="text" placeholder="Additional note" />
@@ -57,6 +61,7 @@
 
     document.getElementById('btnWithdraw').addEventListener('click', ()=>{
       const method = document.getElementById('method').value;
+      const network = document.getElementById('network').value;
       const amount = Number(document.getElementById('amount').value || 0);
       const dest = document.getElementById('dest').value.trim();
       const note = document.getElementById('note').value.trim();
@@ -67,7 +72,7 @@
       if(currentBalance < amount) return alert('Insufficient balance');
 
       const id = 'w_' + Date.now();
-      const rec = { id, method, amount, dest, note, created: new Date().toISOString(), status: 'pending' };
+      const rec = { id, method, network, amount, dest, note, created: new Date().toISOString(), status: 'pending' };
       
       subtractBalance(amount);
       saveWithdraw(rec);
